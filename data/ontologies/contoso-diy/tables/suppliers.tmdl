@@ -1,0 +1,34 @@
+table suppliers
+	lineageTag: 84dc5e0a-badb-5fd4-a9eb-293ee06425ec
+
+	column supplier_id
+		dataType: string
+		lineageTag: 9dd77d6e-4009-5497-9675-869d63720998
+		sourceColumn: supplier_id
+
+	column supplier_name
+		dataType: string
+		lineageTag: 845c9431-bac1-5719-b2ba-1bd7aba7b5f7
+		sourceColumn: supplier_name
+
+	column contact_email
+		dataType: string
+		lineageTag: b0a0ae35-bcdd-585a-a876-94eb7d781e9d
+		sourceColumn: contact_email
+
+	column lead_time_days
+		dataType: int64
+		lineageTag: 43f64794-1d88-57b8-97fc-541dd1428d2f
+		sourceColumn: lead_time_days
+
+	column reliability_rating
+		dataType: double
+		lineageTag: f6488e04-c1e0-5d20-912b-a7753858d42b
+		sourceColumn: reliability_rating
+
+	partition suppliers = entity
+		mode: directLake
+		source
+			entityName: suppliers
+			expressionSource: 'DirectLake - ContosoDIYLakehouse'
+

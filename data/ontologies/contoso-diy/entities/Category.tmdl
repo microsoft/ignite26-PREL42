@@ -1,0 +1,97 @@
+/// A product category with monthly seasonal demand multipliers.
+entity Category
+	lineageTag: fb380521-6729-5154-89c5-f64444341ae0
+	backingTable: categories
+	keyProperty: categoryName
+
+	property categoryName
+		dataType: string
+		lineageTag: 22637fdb-4787-5487-a098-751c89620d78
+
+		backingConfiguration
+			valueColumn: categories.category_name
+
+	property multiplierJan
+		dataType: double
+		lineageTag: 9f194c5e-6afb-5c73-86c8-c720376e63dc
+
+		backingConfiguration
+			valueColumn: categories.multiplier_jan
+
+	property multiplierFeb
+		dataType: double
+		lineageTag: d310e99c-8afc-5193-9f46-ce2b08aa50f9
+
+		backingConfiguration
+			valueColumn: categories.multiplier_feb
+
+	property multiplierMar
+		dataType: double
+		lineageTag: 219c16f1-3d76-52ab-a31a-b584a085caf5
+
+		backingConfiguration
+			valueColumn: categories.multiplier_mar
+
+	property multiplierApr
+		dataType: double
+		lineageTag: 4cd83d3f-8016-5b04-a602-8323fe8b7bba
+
+		backingConfiguration
+			valueColumn: categories.multiplier_apr
+
+	property multiplierMay
+		dataType: double
+		lineageTag: 865b19d3-1900-5277-bdb1-5537ab5c9a9d
+
+		backingConfiguration
+			valueColumn: categories.multiplier_may
+
+	property multiplierJun
+		dataType: double
+		lineageTag: cd59c41c-9cd0-50d0-a9e7-0b100cb99b7c
+
+		backingConfiguration
+			valueColumn: categories.multiplier_jun
+
+	property multiplierJul
+		dataType: double
+		lineageTag: 77f801d4-ddf1-571b-8bad-e127e9416ecf
+
+		backingConfiguration
+			valueColumn: categories.multiplier_jul
+
+	property multiplierAug
+		dataType: double
+		lineageTag: fbf9a870-831a-5953-8b2e-d26d1cc46898
+
+		backingConfiguration
+			valueColumn: categories.multiplier_aug
+
+	property multiplierSep
+		dataType: double
+		lineageTag: 2c034e2d-bfec-5eb6-8998-06880eddbde5
+
+		backingConfiguration
+			valueColumn: categories.multiplier_sep
+
+	property multiplierOct
+		dataType: double
+		lineageTag: 38a0a79e-b2c4-5610-884b-047d76100d2b
+
+		backingConfiguration
+			valueColumn: categories.multiplier_oct
+
+	property multiplierNov
+		dataType: double
+		lineageTag: ef4e0500-7412-5ada-8474-44808406c2e5
+
+		backingConfiguration
+			valueColumn: categories.multiplier_nov
+
+	property multiplierDec
+		dataType: double
+		lineageTag: aa4937aa-8524-5efb-a395-7d7f07c80bd7
+
+		backingConfiguration
+			valueColumn: categories.multiplier_dec
+

@@ -1,0 +1,20 @@
+relationship rel_products_category
+	fromColumn: products.category
+	toColumn: categories.category_name
+
+relationship rel_inventory_store
+	fromColumn: inventory.store_id
+	toColumn: stores.store_id
+
+relationship rel_inventory_product
+	fromColumn: inventory.sku
+	toColumn: products.sku
+
+relationship rel_product_suppliers_supplier
+	fromColumn: product_suppliers.supplier_id
+	toColumn: suppliers.supplier_id
+
+relationship rel_product_suppliers_product
+	fromColumn: product_suppliers.sku
+	toColumn: products.sku
+

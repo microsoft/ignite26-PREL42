@@ -1,0 +1,49 @@
+table products
+	lineageTag: 392e7315-2187-5540-b3c1-cedbb6f297d0
+
+	column sku
+		dataType: string
+		lineageTag: 984a62f7-80f8-5a30-b48b-214b56d0c069
+		sourceColumn: sku
+
+	column name
+		dataType: string
+		lineageTag: 453472cd-c547-523b-a8b4-4bef65e8a31d
+		sourceColumn: name
+
+	column category
+		dataType: string
+		lineageTag: e016cc11-0574-524a-b1d2-ba305bc9ddb5
+		sourceColumn: category
+
+	column product_type
+		dataType: string
+		lineageTag: a0ec44a8-3244-5500-a2b2-e2e9ec634ed1
+		sourceColumn: product_type
+
+	column price
+		dataType: double
+		lineageTag: bbd8623e-0e1f-5e64-bbc8-41f57597ca76
+		sourceColumn: price
+
+	column description
+		dataType: string
+		lineageTag: 35b93318-aadd-5ee7-8504-2c5bf6cb2f4b
+		sourceColumn: description
+
+	column image_path
+		dataType: string
+		lineageTag: e28b30ab-0cfb-5c32-8106-34e84dd6b4e1
+		sourceColumn: image_path
+
+	column seasonal_multipliers
+		dataType: string
+		lineageTag: 8b933967-43d2-55b8-93cb-29962d3fa949
+		sourceColumn: seasonal_multipliers
+
+	partition products = entity
+		mode: directLake
+		source
+			entityName: products
+			expressionSource: 'DirectLake - ContosoDIYLakehouse'
+

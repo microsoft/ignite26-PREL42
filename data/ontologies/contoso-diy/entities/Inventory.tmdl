@@ -1,0 +1,69 @@
+/// Stock levels for a product at a store.
+entity Inventory
+	lineageTag: 62ecd11e-5bc7-55c1-9072-8d9010e3abb9
+	backingTable: inventory
+	keyProperty: inventoryId
+
+	property inventoryId
+		dataType: string
+		lineageTag: d92c90ad-6cc5-5fc0-8575-10e53fd203cd
+
+		backingConfiguration
+			valueColumn: inventory.inventory_id
+
+	property storeId
+		dataType: string
+		lineageTag: 9f82a771-cd61-5520-9c23-6ce38ae2d80a
+
+		backingConfiguration
+			valueColumn: inventory.store_id
+
+	property sku
+		dataType: string
+		lineageTag: 3f8174d3-8fff-5b92-9f06-465595009e0a
+
+		backingConfiguration
+			valueColumn: inventory.sku
+
+	property quantityOnHand
+		dataType: int64
+		lineageTag: 8e7cf9fd-2a95-572f-a7e5-57f5f725ba85
+
+		backingConfiguration
+			valueColumn: inventory.quantity_on_hand
+
+	property quantityReserved
+		dataType: int64
+		lineageTag: 3621c282-4c1d-57d3-a621-c31ad683d5c9
+
+		backingConfiguration
+			valueColumn: inventory.quantity_reserved
+
+	property availableQuantity
+		dataType: int64
+		lineageTag: b419355a-4f95-5000-b2cc-00ab963d19f0
+
+		backingConfiguration
+			valueColumn: inventory.available_quantity
+
+	property reorderPoint
+		dataType: int64
+		lineageTag: a79e73e5-a8e7-5de1-9514-ca76de9dbaf3
+
+		backingConfiguration
+			valueColumn: inventory.reorder_point
+
+	property reorderQuantity
+		dataType: int64
+		lineageTag: 78c0784d-7424-5892-96df-d2703061e351
+
+		backingConfiguration
+			valueColumn: inventory.reorder_quantity
+
+	property lastRestockedAt
+		dataType: dateTime
+		lineageTag: d6f40f4a-13e6-52ea-83b2-7aac346720ea
+
+		backingConfiguration
+			valueColumn: inventory.last_restocked_at
+

@@ -1,0 +1,17 @@
+model Model
+
+ref table products
+ref table categories
+ref table stores
+ref table inventory
+ref table suppliers
+ref table product_suppliers
+
+ref entity Product
+ref entity Category
+ref entity Store
+ref entity Inventory
+ref entity Supplier
+
+ref namespace default
+

@@ -1,0 +1,62 @@
+/// A Contoso DIY product.
+entity Product
+	lineageTag: bd24a696-6379-5691-bde7-72c82ba227aa
+	backingTable: products
+	keyProperty: sku
+
+	property sku
+		dataType: string
+		lineageTag: cbea9dbf-1117-50ba-94ee-4821fb558ae2
+
+		backingConfiguration
+			valueColumn: products.sku
+
+	property name
+		dataType: string
+		lineageTag: f0e21cb1-52ec-5fce-b928-65845c076a86
+
+		backingConfiguration
+			valueColumn: products.name
+
+	property category
+		dataType: string
+		lineageTag: f567bc6e-2bfe-5f2d-90ed-320cf19faab5
+
+		backingConfiguration
+			valueColumn: products.category
+
+	property productType
+		dataType: string
+		lineageTag: d4e71d9a-0012-50da-9987-25e11031d21a
+
+		backingConfiguration
+			valueColumn: products.product_type
+
+	property price
+		dataType: double
+		lineageTag: d1efd21c-2aa7-5ba6-a8d5-29b58225a830
+
+		backingConfiguration
+			valueColumn: products.price
+
+	property description
+		dataType: string
+		lineageTag: 65d43bec-9840-525f-8e08-3e6bfbaca60d
+
+		backingConfiguration
+			valueColumn: products.description
+
+	property imagePath
+		dataType: string
+		lineageTag: e83bae14-fcd5-5c38-9c10-cd618272df7f
+
+		backingConfiguration
+			valueColumn: products.image_path
+
+	property seasonalMultipliers
+		dataType: string
+		lineageTag: dc92f4e4-7dc8-5a0e-b926-213cc06757b6
+
+		backingConfiguration
+			valueColumn: products.seasonal_multipliers
+

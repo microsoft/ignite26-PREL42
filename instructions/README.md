@@ -1,6 +1,8 @@
 # Attendee instructions
 
-<!-- IGNITE TEMPLATE PLACEHOLDER: remove this folder when the session has no attendee step-by-step guidance. -->
+Step-by-step instructions for the hosted Skillable lab:
 
-Use this folder for attendee step-by-step guidance, including self-paced
-instructions, for any session type.
+1. [Lab overview and steps](overview.md)
+2. [Summary and next steps](summary.md)
+
+To run the lab in your own Azure subscription instead, follow [Deploy to your own Azure subscription](../docs/deploy-yourself.md).

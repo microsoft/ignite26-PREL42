@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: azure/CLI@v2
+        with:
+          inlineScript: az bicep install
+      - run: uv sync --locked --all-groups
+      - run: uv run ruff check .
+      - run: >-
+          uv run python -m compileall -q
+          infra
+          src/agent-foundryiq-mcp
+          src/agent-foundryiq-api
+          src/agent-toolbox-foundryiq
+          src/agent-toolbox-foundryiq-workiq
+          src/agent-toolbox-workiq
+      - run: az bicep build --file infra/main.bicep --stdout > /dev/null

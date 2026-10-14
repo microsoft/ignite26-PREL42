@@ -1,0 +1,19 @@
+table product_suppliers
+	lineageTag: f3fba736-4991-510c-b7d8-9486fd9ad2e6
+
+	column supplier_id
+		dataType: string
+		lineageTag: a050805b-db84-548c-a946-fb82d565a6ab
+		sourceColumn: supplier_id
+
+	column sku
+		dataType: string
+		lineageTag: fbd1952f-0f1c-5e6a-9741-03f7e59c13b4
+		sourceColumn: sku
+
+	partition product_suppliers = entity
+		mode: directLake
+		source
+			entityName: product_suppliers
+			expressionSource: 'DirectLake - ContosoDIYLakehouse'
+

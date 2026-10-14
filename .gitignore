@@ -427,3 +427,36 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Azure Developer CLI
+.azure/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.sample
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Editors and operating systems
+.DS_Store
+*.swp
+
+# Setup logs and generated files
+fabric_setup_*.log
+infra/create-lakehouse.log
+infra/deployment-outputs.json
+lifecycle-log.txt
+
+# Local porting notes
+plan.md
+

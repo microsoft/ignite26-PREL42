@@ -1,0 +1,41 @@
+/// A supplier of Contoso DIY products.
+entity Supplier
+	lineageTag: d865df06-8f8f-5a18-8eab-91a838a71e3b
+	backingTable: suppliers
+	keyProperty: supplierId
+
+	property supplierId
+		dataType: string
+		lineageTag: 47bdc97b-4d85-5915-b073-f506dfbcd323
+
+		backingConfiguration
+			valueColumn: suppliers.supplier_id
+
+	property supplierName
+		dataType: string
+		lineageTag: 41b68d13-9b90-5ac5-b7c9-ef82ae4e8ac9
+
+		backingConfiguration
+			valueColumn: suppliers.supplier_name
+
+	property contactEmail
+		dataType: string
+		lineageTag: df39026e-dff2-5c55-837d-ddce61e39e84
+
+		backingConfiguration
+			valueColumn: suppliers.contact_email
+
+	property leadTimeDays
+		dataType: int64
+		lineageTag: fcc57893-0f46-55c4-955d-918ea93968e3
+
+		backingConfiguration
+			valueColumn: suppliers.lead_time_days
+
+	property reliabilityRating
+		dataType: double
+		lineageTag: 8c7ed7b4-0513-52c6-a8c2-5cf0e7797d27
+
+		backingConfiguration
+			valueColumn: suppliers.reliability_rating
+

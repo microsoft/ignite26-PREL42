@@ -1,0 +1,10 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/src/agent-foundryiq-mcp",
+        "${workspaceFolder}/src/agent-foundryiq-api"
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "chat.mcp.autostart": "never"
+}
