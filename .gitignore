@@ -457,3 +457,6 @@ infra/create-lakehouse.log
 infra/deployment-outputs.json
 lifecycle-log.txt
 
+# Local porting notes
+plan.md
+

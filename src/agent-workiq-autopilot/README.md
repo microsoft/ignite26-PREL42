@@ -77,4 +77,4 @@ container is healthy (allow a few minutes; until then the previous version keeps
 > Source adapted from the official sample
 > `microsoft-foundry/foundry-samples/samples/python/foundry-autopilot-agent`
 > (flattened from the `hello_world_a365_agent` package into this folder's top-level
-> modules, manifest/prompt retargeted to Work IQ). See `../../ATTRIBUTION.md`.
+> modules, manifest/prompt retargeted to Work IQ).
