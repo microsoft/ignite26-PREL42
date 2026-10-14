@@ -4,7 +4,7 @@ This folder is a **Foundry Hosted** Agent 365 digital worker that answers in
 Microsoft Teams and is grounded in the signed-in user's workplace context through the
 **Work IQ MCP** endpoint.
 
-It is the live finale of the Work IQ Deep Dive: notebooks → MAF agent → a Teams autopilot
+It is the finale of the Work IQ path in this lab: notebooks → MAF agent → a Teams autopilot
 that reads and acts on your work, all through Work IQ.
 
 ## Runtime flow

@@ -1,5 +1,5 @@
 {
-  "name": "Microsoft IQ Deep Dive with Python",
+  "name": "PREL42: Build with Microsoft IQ",
   "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/azure-cli:1": {},

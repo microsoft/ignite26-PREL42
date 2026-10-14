@@ -98,8 +98,8 @@ resource aiAccount 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
       type: 'SystemAssigned'
     }
     properties: {
-      description: 'Foundry IQ notebooks and HR hosted agent'
-      displayName: 'Foundry IQ deep dive'
+      description: 'Microsoft IQ notebooks and hosted agents for Ignite 2026 PREL42'
+      displayName: 'PREL42 Build with Microsoft IQ'
     }
     dependsOn: [
       sequentialDeployments
