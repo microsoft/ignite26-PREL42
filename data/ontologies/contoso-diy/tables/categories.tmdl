@@ -1,0 +1,74 @@
+table categories
+	lineageTag: 0886f710-5a2f-56c8-962d-c9aa0e5911d7
+
+	column category_name
+		dataType: string
+		lineageTag: 4f85d859-a80c-5350-9be4-9533f5f325da
+		sourceColumn: category_name
+
+	column multiplier_jan
+		dataType: double
+		lineageTag: 9b5797bf-6c1a-595f-b90a-2424d19ac099
+		sourceColumn: multiplier_jan
+
+	column multiplier_feb
+		dataType: double
+		lineageTag: e24c6c10-4f6f-583b-889a-ddd7c80762c3
+		sourceColumn: multiplier_feb
+
+	column multiplier_mar
+		dataType: double
+		lineageTag: 9468794c-4a64-588c-983c-8f0dc74db21f
+		sourceColumn: multiplier_mar
+
+	column multiplier_apr
+		dataType: double
+		lineageTag: 079a94e7-b746-5224-a4aa-7130e798a335
+		sourceColumn: multiplier_apr
+
+	column multiplier_may
+		dataType: double
+		lineageTag: 016e7a6d-9651-5614-8f0f-7f6242f25bea
+		sourceColumn: multiplier_may
+
+	column multiplier_jun
+		dataType: double
+		lineageTag: 33dfc2dd-084d-56c1-8ead-ab25ed50dead
+		sourceColumn: multiplier_jun
+
+	column multiplier_jul
+		dataType: double
+		lineageTag: f7a21099-efd1-5d0d-9dfa-5baea995dc4c
+		sourceColumn: multiplier_jul
+
+	column multiplier_aug
+		dataType: double
+		lineageTag: 1e88ce3f-f3ee-5e6b-a5df-308735339b06
+		sourceColumn: multiplier_aug
+
+	column multiplier_sep
+		dataType: double
+		lineageTag: 2bb93039-e7ed-5fda-ae86-feeb8de627ff
+		sourceColumn: multiplier_sep
+
+	column multiplier_oct
+		dataType: double
+		lineageTag: 170fa79c-a4ff-52ac-88c9-f5fe8221f0a6
+		sourceColumn: multiplier_oct
+
+	column multiplier_nov
+		dataType: double
+		lineageTag: 1a090b46-e9ad-54ae-947e-4a6af264d55d
+		sourceColumn: multiplier_nov
+
+	column multiplier_dec
+		dataType: double
+		lineageTag: 079c7917-ef25-5f9c-a78b-394af9e111ab
+		sourceColumn: multiplier_dec
+
+	partition categories = entity
+		mode: directLake
+		source
+			entityName: categories
+			expressionSource: 'DirectLake - ContosoDIYLakehouse'
+

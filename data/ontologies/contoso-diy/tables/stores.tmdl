@@ -1,0 +1,59 @@
+table stores
+	lineageTag: 63e206b5-0041-54d5-9c3f-140cab00e56b
+
+	column store_id
+		dataType: string
+		lineageTag: 31f4ddfb-b43b-5137-ab1b-1918daaaf412
+		sourceColumn: store_id
+
+	column store_name
+		dataType: string
+		lineageTag: 7e56b8c6-477e-5dd4-8336-069ece13c95b
+		sourceColumn: store_name
+
+	column city
+		dataType: string
+		lineageTag: 7dec89d0-d145-5187-bc22-17f32bc3374c
+		sourceColumn: city
+
+	column state
+		dataType: string
+		lineageTag: 8503ff72-6943-557e-9af8-9ba56dd96f20
+		sourceColumn: state
+
+	column region
+		dataType: string
+		lineageTag: 8dfd2206-c7be-5a0f-bd54-52aab3065620
+		sourceColumn: region
+
+	column store_type
+		dataType: string
+		lineageTag: 175f6093-8340-55f5-8ca0-4e61f144de1a
+		sourceColumn: store_type
+
+	column rls_user_id
+		dataType: string
+		lineageTag: 026f7e9f-b92a-52fa-a6d4-830da4025396
+		sourceColumn: rls_user_id
+
+	column customer_distribution_weight
+		dataType: int64
+		lineageTag: a9092980-d5fb-5ba0-9c5c-aa0ca1640c8d
+		sourceColumn: customer_distribution_weight
+
+	column order_frequency_multiplier
+		dataType: double
+		lineageTag: d55f229a-5340-5b04-8ed3-6d461fb45577
+		sourceColumn: order_frequency_multiplier
+
+	column order_value_multiplier
+		dataType: double
+		lineageTag: 73faf1cf-9ea1-56ae-b36a-a57feca1174e
+		sourceColumn: order_value_multiplier
+
+	partition stores = entity
+		mode: directLake
+		source
+			entityName: stores
+			expressionSource: 'DirectLake - ContosoDIYLakehouse'
+

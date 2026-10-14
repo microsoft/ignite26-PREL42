@@ -1,0 +1,76 @@
+/// A Contoso DIY retail or online store.
+entity Store
+	lineageTag: 3c291d36-19b3-52c1-b2c8-cc6def33998f
+	backingTable: stores
+	keyProperty: storeId
+
+	property storeName
+		dataType: string
+		lineageTag: 1fb51ad6-e085-5ae9-a5e1-adcab4daf966
+
+		backingConfiguration
+			valueColumn: stores.store_name
+
+	property rlsUserId
+		dataType: string
+		lineageTag: 61c08a14-84e7-5019-9b89-7e5977ae7739
+
+		backingConfiguration
+			valueColumn: stores.rls_user_id
+
+	property customerDistributionWeight
+		dataType: int64
+		lineageTag: d243240b-3bf5-5c75-8655-d6aeb002d59b
+
+		backingConfiguration
+			valueColumn: stores.customer_distribution_weight
+
+	property orderFrequencyMultiplier
+		dataType: double
+		lineageTag: 07f637b4-24f6-5999-85df-a8b0b9d0e237
+
+		backingConfiguration
+			valueColumn: stores.order_frequency_multiplier
+
+	property orderValueMultiplier
+		dataType: double
+		lineageTag: a9a3595a-0a52-5e81-bfc3-139f33e9e325
+
+		backingConfiguration
+			valueColumn: stores.order_value_multiplier
+
+	property storeId
+		dataType: string
+		lineageTag: 00d49fa8-85e9-5db9-84c0-ae4e7c0fab1f
+
+		backingConfiguration
+			valueColumn: stores.store_id
+
+	property city
+		dataType: string
+		lineageTag: 3cd6e0f3-f478-5e34-b08a-d4291beb0a84
+
+		backingConfiguration
+			valueColumn: stores.city
+
+	property state
+		dataType: string
+		lineageTag: 4967280d-2101-5362-ad9c-ac44e5b062ed
+
+		backingConfiguration
+			valueColumn: stores.state
+
+	property region
+		dataType: string
+		lineageTag: 19bd42a5-fbf8-5b9b-b729-5490fd036d7a
+
+		backingConfiguration
+			valueColumn: stores.region
+
+	property storeType
+		dataType: string
+		lineageTag: 6f2a203f-3ec5-5401-a925-2cb43922bccd
+
+		backingConfiguration
+			valueColumn: stores.store_type
+

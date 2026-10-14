@@ -1,0 +1,40 @@
+[project]
+name = "ignite26-prel42"
+version = "0.1.0"
+description = "Provisioning helpers for Foundry IQ notebooks and an HR hosted agent"
+requires-python = ">=3.12"
+dependencies = [
+    "aiohttp>=3.13.5",
+    "azure-ai-projects>=2.3.0,<2.4.0",
+    "azure-identity>=1.25.2",
+    "azure-mgmt-authorization>=4.0.0",
+    "azure-search-documents==12.1.0b2",
+    "azure-storage-file-datalake>=12.23.0",
+    "httpx>=0.28.1",
+    "ipykernel==7.3.0",
+    "mcp>=1.28.1,<2",
+    "microsoft-fabric-api==0.1.0b20",
+    "msgraph-sdk>=1.49.0",
+    "python-dotenv>=1.2.2",
+    "requests>=2.33.0",
+]
+
+[dependency-groups]
+dev = [
+    "pyyaml>=6.0.3",
+    "ruff>=0.15.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.ty.environment]
+python = ".venv"
+
+[tool.ruff]
+extend-exclude = ["notebooks"]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

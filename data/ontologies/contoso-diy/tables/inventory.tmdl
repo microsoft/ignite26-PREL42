@@ -1,0 +1,54 @@
+table inventory
+	lineageTag: 1aee9022-ad3f-53f6-b8ee-c59dc12fba5a
+
+	column inventory_id
+		dataType: string
+		lineageTag: 1ed2ca67-e3f4-53e8-bfa9-37354c9429e8
+		sourceColumn: inventory_id
+
+	column store_id
+		dataType: string
+		lineageTag: 0456f2ef-d28f-56f7-92aa-3696387ea030
+		sourceColumn: store_id
+
+	column sku
+		dataType: string
+		lineageTag: 590e42ed-5d29-5424-a631-a9a98e452f4c
+		sourceColumn: sku
+
+	column quantity_on_hand
+		dataType: int64
+		lineageTag: 68148771-1f70-55d0-a638-9dfdab74cb4b
+		sourceColumn: quantity_on_hand
+
+	column quantity_reserved
+		dataType: int64
+		lineageTag: 90223f1a-4a5d-5f30-8560-b5f2e052211c
+		sourceColumn: quantity_reserved
+
+	column available_quantity
+		dataType: int64
+		lineageTag: c7fb04d2-266b-55b7-aab9-8d89c70555f7
+		sourceColumn: available_quantity
+
+	column reorder_point
+		dataType: int64
+		lineageTag: 792d6228-1869-5d7e-be70-84c875adef42
+		sourceColumn: reorder_point
+
+	column reorder_quantity
+		dataType: int64
+		lineageTag: 11c5c226-dc02-5df1-a766-ace2008cb056
+		sourceColumn: reorder_quantity
+
+	column last_restocked_at
+		dataType: dateTime
+		lineageTag: 517eb38c-cdd0-5065-91ee-f279f2b7113d
+		sourceColumn: last_restocked_at
+
+	partition inventory = entity
+		mode: directLake
+		source
+			entityName: inventory
+			expressionSource: 'DirectLake - ContosoDIYLakehouse'
+

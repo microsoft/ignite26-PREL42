@@ -1,0 +1,35 @@
+entityRelationship contains
+	lineageTag: 2087d4fc-2a28-50c7-aa6e-34e6f2aebcb8
+	fromEntity: Category
+	toEntity: Product
+
+	backingConfiguration
+		relationship: rel_products_category
+
+entityRelationship holds
+	lineageTag: cf758c59-3bfb-5221-9af2-44c928199285
+	fromEntity: Store
+	toEntity: Inventory
+
+	backingConfiguration
+		relationship: rel_inventory_store
+
+entityRelationship recordsStockFor
+	lineageTag: 9a2e783e-d1e4-5f41-ac8a-91de7b4cb2b5
+	fromEntity: Inventory
+	toEntity: Product
+
+	backingConfiguration
+		relationship: rel_inventory_product
+
+entityRelationship supplies
+	lineageTag: f04f6dba-00b9-5313-9c9a-c6713c486603
+	fromEntity: Supplier
+	toEntity: Product
+
+	backingConfiguration
+		type: table
+		table: product_suppliers
+		fromRelationship: rel_product_suppliers_supplier
+		toRelationship: rel_product_suppliers_product
+
