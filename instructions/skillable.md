@@ -25,7 +25,12 @@ Sign in to the virtual machine with these credentials:
 
 Your Azure resources, search indexes, Fabric items, hosted agents, and sample emails are already created for you.
 
-Open the **.env** file in the lab folder and check that it includes `AZURE_AI_SEARCH_SERVICE_ENDPOINT`, `FOUNDRY_PROJECT_ENDPOINT`, `FABRIC_ONTOLOGY_MCP_URL`, and `FABRIC_DATA_AGENT_MCP_URL`. If any are missing, let a proctor know.
+1. In Visual Studio Code, open a terminal with **Terminal > New Terminal**.
+2. Run this command to show the MCP server URLs that setup saved for you:
+
+    +++Get-Content .env | Select-String "MCP_URL"+++
+
+    You should see three lines: **FOUNDRY_IQ_MCP_URL**, **FABRIC_ONTOLOGY_MCP_URL**, and **FABRIC_DATA_AGENT_MCP_URL**. If any are missing, let a proctor know.
 
 ### Sign in to the Azure portal
 
@@ -40,12 +45,11 @@ Keep the browser open. The next sign-ins reuse this session.
 
 The notebooks and agents will use your Azure Developer CLI sign-in.
 
-1. In Visual Studio Code, open a terminal with **Terminal > New Terminal**.
-2. Run:
+1. In the Visual Studio Code terminal, run:
 
     +++azd auth login+++
 
-3. In the browser window that opens, select your lab account.
+2. In the browser window that opens, select your lab account.
 
 ## Sign in to GitHub
 
@@ -70,12 +74,12 @@ In the exercises, you will connect GitHub Copilot app to each IQ so you can quer
 Web IQ grounds answers in current web content.
 
 > [!NOTE]
-> This exercise needs a Web IQ key. Open the **.env** file in the lab folder and check that it includes `WEB_IQ_KEY`. If it doesn't, skip to the next exercise.
+> This exercise needs a Web IQ key. In the Visual Studio Code terminal, run +++Get-Content .env | Select-String "WEB_IQ_KEY"+++. If it shows no key, skip to the next exercise.
 
 ## Call Web IQ from a notebook
 
 1. Open **notebooks/foundryiq-webiq.ipynb**.
-2. Select **Select Kernel > Python Environments**, and then select the **.venv** environment in the lab folder (`.venv\Scripts\python.exe`).
+2. Select **Select Kernel > Python Environments**, and then select the **.venv** environment in the lab folder.
 3. Run each cell. You add an MCP server knowledge source backed by Web IQ to a knowledge base, so answers combine the HR documents with web results.
 
 ## Use Web IQ in the GitHub Copilot app
@@ -85,7 +89,7 @@ Web IQ grounds answers in current web content.
     - **Server name**: +++web-iq+++
     - **Server type**: HTTP
     - **URL**: +++https://api.microsoft.ai/v3/mcp+++
-3. Select **Add header**, and enter the name +++x-apikey+++ and the `WEB_IQ_KEY` value from the **.env** file.
+3. Select **Add header**, and enter the name +++x-apikey+++ and the **WEB_IQ_KEY** value that the command above showed.
 4. Select **Add server**, and check that the server is turned on in the **MCP Servers** list.
 
 Then select **New** and ask:
@@ -111,15 +115,19 @@ In each notebook, select **Select Kernel > Python Environments > .venv** if it i
 
 Add two MCP servers, one for the ontology and one for the data agent. Both sign you in with your Microsoft Entra account, so they don't need headers.
 
+To get their URLs, run this in the Visual Studio Code terminal:
+
++++Get-Content .env | Select-String "FABRIC_.*_MCP_URL"+++
+
 1. In the GitHub Copilot app, select **Customize**, and then select **Add > MCP Server...**.
 2. Enter these values, and then select **Add server**:
     - **Server name**: +++fabric-iq-ontology+++
     - **Server type**: HTTP
-    - **URL**: the `FABRIC_ONTOLOGY_MCP_URL` value from the **.env** file
+    - **URL**: the **FABRIC_ONTOLOGY_MCP_URL** value, everything after the **=**
 3. Select **Add > MCP Server...** again, enter these values, and then select **Add server**:
     - **Server name**: +++fabric-iq-data-agent+++
     - **Server type**: HTTP
-    - **URL**: the `FABRIC_DATA_AGENT_MCP_URL` value from the **.env** file
+    - **URL**: the **FABRIC_DATA_AGENT_MCP_URL** value, everything after the **=**
 4. Check that both servers are turned on in the **MCP Servers** list. When prompted, sign in with your lab credentials.
 
 Then select **New** and ask:
@@ -176,8 +184,12 @@ In each notebook, select **Select Kernel > Python Environments > .venv** if it i
 The knowledge base MCP endpoint uses a Search query key, so first copy one from the Azure portal:
 
 1. Go back to the Azure portal in the browser.
-2. Search for the Search service named in the `AZURE_AI_SEARCH_SERVICE_NAME` value of your **.env** file, and open it.
+2. Search for +++search-+++ in the top search bar, and open the Azure AI Search service in your resource group.
 3. Select **Settings > Keys**, and copy a key under **Manage query keys**.
+
+Then get the knowledge base's MCP URL by running this in the Visual Studio Code terminal:
+
++++Get-Content .env | Select-String "FOUNDRY_IQ_MCP_URL"+++
 
 Then add the MCP server:
 
@@ -185,7 +197,7 @@ Then add the MCP server:
 2. Enter these values:
     - **Server name**: +++foundry-iq+++
     - **Server type**: HTTP
-    - **URL**: `https://<AZURE_AI_SEARCH_SERVICE_NAME>.search.windows.net/knowledgebases/contoso-company-kb-minimal/mcp?api-version=2026-05-01-preview`, with `<AZURE_AI_SEARCH_SERVICE_NAME>` replaced by the value from the **.env** file
+    - **URL**: the **FOUNDRY_IQ_MCP_URL** value, everything after the **=**
 3. Select **Add header**, and enter the name +++api-key+++ and the query key you copied.
 4. Select **Add server**, and check that the server is turned on in the **MCP Servers** list.
 
@@ -201,11 +213,11 @@ Each agent in the **src/** folder is a Microsoft Agent Framework app that uses F
 
 | Agent | How it reaches its data |
 | --- | --- |
-| `agent-foundryiq-mcp` | Connects to a knowledge base through its Foundry IQ MCP endpoint |
-| `agent-foundryiq-api` | Calls the knowledge base retrieval API from a custom Python tool |
-| `agent-toolbox-foundryiq` | Uses a Foundry toolbox with the knowledge base, web search, and code interpreter |
-| `agent-toolbox-workiq` | Uses a Work IQ toolbox for your Microsoft 365 context |
-| `agent-toolbox-foundryiq-workiq` | Uses a Foundry toolbox over a knowledge base with a Work IQ source |
+| **agent-foundryiq-mcp** | Connects to a knowledge base through its Foundry IQ MCP endpoint |
+| **agent-foundryiq-api** | Calls the knowledge base retrieval API from a custom Python tool |
+| **agent-toolbox-foundryiq** | Uses a Foundry toolbox with the knowledge base, web search, and code interpreter |
+| **agent-toolbox-workiq** | Uses a Work IQ toolbox for your Microsoft 365 context |
+| **agent-toolbox-foundryiq-workiq** | Uses a Foundry toolbox over a knowledge base with a Work IQ source |
 
 ## Run an agent locally
 
