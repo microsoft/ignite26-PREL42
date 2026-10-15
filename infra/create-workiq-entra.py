@@ -323,6 +323,15 @@ def create_federated_credential(
             if credential.get("subject") == subject and credential.get("id"):
                 print("Reusing the existing federated credential for the search identity.")
                 return credential["id"]
+        for credential in existing.json().get("value", []):
+            # A recreated search service keeps its name but gets a new identity, so retarget the old credential.
+            if credential.get("name") == credential_name and credential.get("id"):
+                print("Updating the existing federated credential to the new search identity.")
+                graph.patch(
+                    f"/applications/{app_object_id}/federatedIdentityCredentials/{credential['id']}",
+                    {"subject": subject},
+                )
+                return credential["id"]
         created = graph.post(
             f"/applications/{app_object_id}/federatedIdentityCredentials",
             {
