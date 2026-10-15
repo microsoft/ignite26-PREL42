@@ -47,11 +47,17 @@ The notebooks and agents will use your Azure Developer CLI sign-in.
 
 3. In the browser window that opens, select your lab account.
 
+## Sign in to GitHub
+
+1. In the browser, sign in through the [Skillable Events GitHub enterprise](https://github.com/enterprises/skillable-events/sso).
+
+You will be signed into a special account created for the lab environment, not your actual GitHub account.
+
 ## Set up the GitHub Copilot app
 
 In the exercises, you will connect GitHub Copilot app to each IQ so you can query it from a chat.
 
-1. Open the **GitHub Copilot** app and sign in if prompted.
+1. Open the **GitHub Copilot** app. If prompted, sign in with the GitHub account from the previous step.
 2. Don't open the lab folder in the GitHub Copilot app. Use the app only for chat. You will use VS Code for interacting with the lab folder.
 3. Select **New** and say hi to the agent. For example:
 
@@ -224,12 +230,22 @@ Each agent in the **src/** folder is a Microsoft Agent Framework app that uses F
 
     +++azd ai agent invoke agent-foundryiq-mcp "What benefits are available, and when do I need to enroll?"+++
 
-2. Open the hosted playground: go to +++https://ai.azure.com+++, sign in with your lab credentials, open the **ai-project-prel42** project, select **Agents**, and then select **agent-foundryiq-mcp**.
-3. Try a Work IQ agent:
+2. Open the hosted playground. Get the agent's details:
 
-    +++azd ai agent invoke agent-toolbox-workiq --new-session --new-conversation "Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested."+++
+    +++azd ai agent show agent-foundryiq-mcp+++
 
-    The first time, the agent replies with a sign-in link. Open it, sign in with your lab credentials, and then run the command again.
+    Open the **Playground URL** from the output, sign in with your lab credentials if prompted, and ask the same question.
+3. Try a Work IQ agent in its hosted playground:
+
+    +++azd ai agent show agent-toolbox-workiq+++
+
+    Open the **Playground URL** from the output, and ask:
+
+    +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
+
+    The first time, the agent asks you to sign in to the Work IQ connection. Select **Open consent**, sign in with your lab credentials, check **I have verified this request and trust the source**, and select **Allow access**. If the window then shows an "Authentication failed" message, close it.
+
+    After you've signed in, start a new chat and ask the question again.
 
 4. Optional: compare **agent-foundryiq-api** and **agent-toolbox-foundryiq**, locally and hosted.
 
