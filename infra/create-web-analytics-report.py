@@ -92,14 +92,22 @@ def main() -> None:
         report = find_report(client, workspace_id)
         if report is None:
             print(f"Creating Power BI report '{REPORT_NAME}'...")
-            report = client.report.items.create_report(
-                workspace_id,
-                CreateReportRequest(
-                    display_name=REPORT_NAME,
-                    description="Interactive dashboard for website traffic analytics.",
-                    definition=definition,
-                ),
-            )
+            try:
+                report = client.report.items.create_report(
+                    workspace_id,
+                    CreateReportRequest(
+                        display_name=REPORT_NAME,
+                        description="Interactive dashboard for website traffic analytics.",
+                        definition=definition,
+                    ),
+                )
+            except KeyError as error:
+                # The SDK's result extractor raises KeyError('status') when Fabric creates the item synchronously.
+                if error.args != ("status",):
+                    raise
+                report = find_report(client, workspace_id)
+                if report is None:
+                    raise RuntimeError(f"Report '{REPORT_NAME}' was created but could not be found.") from None
         else:
             print(f"Updating Power BI report '{REPORT_NAME}'...")
             client.report.items.begin_update_report_definition(

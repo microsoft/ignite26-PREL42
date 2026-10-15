@@ -415,15 +415,28 @@ def main() -> None:
         )
         if graph is None:
             print(f"Creating Fabric Graph Model '{FABRIC_GRAPH_NAME}'...")
-            graph = client.graphmodel.items.create_graph_model(
-                workspace_id,
-                CreateGraphModelRequest(
-                    display_name=FABRIC_GRAPH_NAME,
-                    description=(
-                        "Product reviews, reviewers, features, and feature-level sentiment."
+            try:
+                graph = client.graphmodel.items.create_graph_model(
+                    workspace_id,
+                    CreateGraphModelRequest(
+                        display_name=FABRIC_GRAPH_NAME,
+                        description=(
+                            "Product reviews, reviewers, features, and feature-level sentiment."
+                        ),
                     ),
-                ),
-            )
+                )
+            except KeyError as error:
+                # The SDK's result extractor raises KeyError('status') when Fabric creates the item synchronously.
+                if error.args != ("status",):
+                    raise
+                graph = find_item_by_name(
+                    client.graphmodel.items.list_graph_models(workspace_id),
+                    FABRIC_GRAPH_NAME,
+                )
+                if graph is None:
+                    raise RuntimeError(
+                        f"Graph Model '{FABRIC_GRAPH_NAME}' was created but could not be found."
+                    ) from None
 
         existing_jobs = list_refresh_jobs(credential, workspace_id, graph.id)
         existing_job_ids = {job["id"] for job in existing_jobs}

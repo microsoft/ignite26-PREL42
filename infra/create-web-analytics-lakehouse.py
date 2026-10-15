@@ -327,13 +327,21 @@ def main() -> None:
         lakehouse = find_lakehouse(client, workspace_id)
         if lakehouse is None:
             print(f"Creating Fabric lakehouse '{LAKEHOUSE_NAME}'...")
-            lakehouse = client.lakehouse.items.create_lakehouse(
-                workspace_id,
-                CreateLakehouseRequest(
-                    display_name=LAKEHOUSE_NAME,
-                    description="Deterministic website traffic analytics data.",
-                ),
-            )
+            try:
+                lakehouse = client.lakehouse.items.create_lakehouse(
+                    workspace_id,
+                    CreateLakehouseRequest(
+                        display_name=LAKEHOUSE_NAME,
+                        description="Deterministic website traffic analytics data.",
+                    ),
+                )
+            except KeyError as error:
+                # The SDK's result extractor raises KeyError('status') when Fabric creates the item synchronously.
+                if error.args != ("status",):
+                    raise
+                lakehouse = find_lakehouse(client, workspace_id)
+                if lakehouse is None:
+                    raise RuntimeError(f"Lakehouse '{LAKEHOUSE_NAME}' was created but could not be found.") from None
         else:
             print(f"Reusing Fabric lakehouse '{LAKEHOUSE_NAME}'.")
 

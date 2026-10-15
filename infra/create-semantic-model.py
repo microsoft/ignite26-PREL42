@@ -119,14 +119,24 @@ def main() -> None:
         semantic_model = find_semantic_model(client, workspace_id)
         if semantic_model is None:
             print(f"Creating semantic model '{SEMANTIC_MODEL_NAME}'...")
-            semantic_model = client.semanticmodel.items.create_semantic_model(
-                workspace_id,
-                CreateSemanticModelRequest(
-                    display_name=SEMANTIC_MODEL_NAME,
-                    description="Direct Lake model for deterministic website analytics.",
-                    definition=definition,
-                ),
-            )
+            try:
+                semantic_model = client.semanticmodel.items.create_semantic_model(
+                    workspace_id,
+                    CreateSemanticModelRequest(
+                        display_name=SEMANTIC_MODEL_NAME,
+                        description="Direct Lake model for deterministic website analytics.",
+                        definition=definition,
+                    ),
+                )
+            except KeyError as error:
+                # The SDK's result extractor raises KeyError('status') when Fabric creates the item synchronously.
+                if error.args != ("status",):
+                    raise
+                semantic_model = find_semantic_model(client, workspace_id)
+                if semantic_model is None:
+                    raise RuntimeError(
+                        f"Semantic model '{SEMANTIC_MODEL_NAME}' was created but could not be found."
+                    ) from None
         else:
             print(f"Updating semantic model '{SEMANTIC_MODEL_NAME}'...")
             client.semanticmodel.items.begin_update_semantic_model_definition(
