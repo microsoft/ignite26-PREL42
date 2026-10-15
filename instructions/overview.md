@@ -127,3 +127,51 @@ If your **.env** file includes `WEB_IQ_KEY`, open **notebooks/foundryiq-webiq.ip
 If you have time left, explore the Work IQ API notebooks: **workiq-api-concepts.ipynb**, **workiq-mcp.ipynb**, **workiq-tools-actions.ipynb**, and **workiq-a2a.ipynb**.
 
 Select **Next** to review what you built.
+
+# Outline
+
+Organize notebooks into folders
+
+# Slides: Microsoft IQ intro (with demo of IQ working in a Copilot)
+
+# Setup VS Code & GitHub Copilot App
+
+Only open the repo in VS Code
+Dont open the repo in GitHub Copilot App
+
+Say hi to the agent? Ask for SF restaurant tips.
+
+# Slides: Web IQ (AB)
+
+# Exercise: Web IQ
+
+* Notebook
+* Use as MCP server in App
+
+# Slides: Fabric IQ (PF)
+
+# Fabric IQ
+
+* Notebooks
+* Use as MCP server in App
+
+# Slides: Work IQ (PF)
+
+# Work IQ
+
+* Notebooks
+* Use as MCP server in App
+
+# Slides: Foundry IQ (PF)
+
+# Foundry IQ
+
+* Notebooks
+* Use as MCP server in App
+
+# Slides: Foundry hosted agents (PF)
+
+# Foundry hosted agents
+
+* Local playground
+* Hosted playground

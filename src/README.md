@@ -10,6 +10,5 @@ Microsoft Agent Framework agents, each deployable as a Microsoft Foundry hosted 
 | `agent-toolbox-foundryiq-workiq` | Uses a Foundry toolbox over a knowledge base with a Work IQ source |
 | `agent-toolbox-workiq` | Uses a Work IQ toolbox for the caller's Microsoft 365 context |
 | `agent-workiq-maf` | Uses the Work IQ toolbox as a "Workmate" assistant |
-| `agent-workiq-autopilot` | Agent 365 autopilot in Microsoft Teams. Deployed manually, see [its README](agent-workiq-autopilot/README.md) |
 
 The notebooks are in [`notebooks/`](../notebooks/).

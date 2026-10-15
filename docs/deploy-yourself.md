@@ -323,51 +323,6 @@ Endpoint notebooks, which skip the knowledge base and call a service endpoint di
 | `workiq-mcp.ipynb` | Consumes Work IQ as a tool through its MCP server |
 | `workiq-tools-actions.ipynb` | The full Work IQ MCP tool catalog and its resource-path model |
 
-### Configure local MCP servers
-
-The repository includes a `.vscode/mcp.json` file that registers these MCP servers for GitHub Copilot in VS Code. The workspace settings turn off MCP autostart, so start each server from **MCP: List Servers** after you configure it:
-
-* `foundryIqKnowledgeBase` — the `contoso-company-kb-minimal` knowledge-base MCP endpoint.
-* `webIq` — the Web IQ MCP endpoint.
-* `fabricIqOntology` — the Fabric ontology MCP endpoint. Requires [Fabric IQ](#enable-fabric-iq).
-
-The Fabric endpoint supports MCP OAuth discovery, so VS Code signs you in with your Microsoft Entra account. The other two endpoints don't, so they authenticate with API-key headers. VS Code prompts for each key the first time a server starts and stores it securely:
-
-* `foundry-iq-key` — a read-only Azure AI Search query key. Get one with:
-
-  ```bash
-  az search query-key list \
-    --service-name "$(azd env get-value AZURE_AI_SEARCH_SERVICE_NAME)" \
-    --resource-group "$(azd env get-value AZURE_RESOURCE_GROUP)" \
-    --query "[0].key" -o tsv
-  ```
-
-* `web-iq-key` — the `WEB_IQ_KEY` value from your `.env` file.
-
-The checked-in URLs use `{AZURE_AI_SEARCH_SERVICE_NAME}`, `{FABRIC_WORKSPACE_ID}`, and `{FABRIC_ONTOLOGY_ID}` placeholders. After provisioning, replace them with the values from your local `.env` file.
-
-On macOS or Linux:
-
-```bash
-env_value() { grep "^$1=" .env | cut -d= -f2- | tr -d "'\""; }
-sed -i.bak \
-  -e "s/{AZURE_AI_SEARCH_SERVICE_NAME}/$(env_value AZURE_AI_SEARCH_SERVICE_NAME)/g" \
-  -e "s/{FABRIC_WORKSPACE_ID}/$(env_value FABRIC_WORKSPACE_ID)/g" \
-  -e "s/{FABRIC_ONTOLOGY_ID}/$(env_value FABRIC_ONTOLOGY_ID)/g" \
-  .vscode/mcp.json && rm .vscode/mcp.json.bak
-```
-
-On Windows, use PowerShell:
-
-```powershell
-function Get-EnvValue($name) { (Select-String -Path .env -Pattern "^$name=").Line -replace "^$name=", '' -replace "['`"]", '' }
-$mcpJson = Get-Content .vscode/mcp.json -Raw
-foreach ($name in 'AZURE_AI_SEARCH_SERVICE_NAME', 'FABRIC_WORKSPACE_ID', 'FABRIC_ONTOLOGY_ID') {
-    $mcpJson = $mcpJson -replace "\{$name\}", (Get-EnvValue $name)
-}
-Set-Content .vscode/mcp.json $mcpJson -NoNewline
-```
-
 When you run a notebook, select the `.venv/bin/python` virtual environment (`.venv\Scripts\python.exe` on Windows).
 
 ## Run and invoke the agents
@@ -384,7 +339,6 @@ The notebooks create their own knowledge bases and are unaffected by these.
 | `agent-toolbox-foundryiq` | Uses a Foundry toolbox holding that knowledge base, web search, and code interpreter |
 | `agent-toolbox-foundryiq-workiq` | Uses a Foundry toolbox over the multi-source Work IQ knowledge base |
 | `agent-toolbox-workiq` | Uses an OAuth2 `RemoteA2A` connection and toolbox for the caller's Microsoft 365 context |
-| `agent-workiq-autopilot` | Hosted Agent 365 autopilot in Teams; grounds and acts through the Work IQ MCP server. Deployed manually, not by `azd deploy`: see [its README](../src/agent-workiq-autopilot/README.md) and [the Agent 365 publishing scripts](../infra/a365/README.md). |
 
 Start any of the agents locally, and test them with either the local playground or CLI:
 

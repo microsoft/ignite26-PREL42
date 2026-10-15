@@ -51,7 +51,7 @@ from microsoft_fabric_api import FabricClient  # noqa: E402
 from microsoft_fabric_api.generated.core.models import (  # noqa: E402
     AddWorkspaceRoleAssignmentRequest,
     CreateWorkspaceRequest,
-    Principal,
+    UserPrincipal,
 )
 from microsoft_fabric_api.generated.lakehouse.models import (  # noqa: E402
     CreateLakehouseRequest,
@@ -301,7 +301,7 @@ def add_workspace_member(workspace_id: str, user_oid: str, user_email: str, role
         get_fabric_client().core.workspaces.add_workspace_role_assignment(
             workspace_id,
             AddWorkspaceRoleAssignmentRequest(
-                principal=Principal(id=user_oid),
+                principal=UserPrincipal(id=user_oid),
                 role=role,
             ),
         )
@@ -348,12 +348,27 @@ def wait_for_created_item(
         time.sleep(interval)
 
 
+def start_create(create: Callable[[], object]) -> None:
+    """Send a Fabric create request whose result is resolved by polling afterwards.
+
+    When Fabric creates the item synchronously, the SDK's result extractor raises
+    KeyError('status') after the request has already succeeded.
+    """
+    try:
+        create()
+    except KeyError as error:
+        if error.args != ("status",):
+            raise
+
+
 def create_lakehouse(workspace_id: str, name: str) -> dict:
     """Create a lakehouse in the specified workspace."""
     log_message(f"Creating lakehouse '{name}'...")
     try:
-        get_fabric_client().lakehouse.items.begin_create_lakehouse(
-            workspace_id, CreateLakehouseRequest(display_name=name)
+        start_create(
+            lambda: get_fabric_client().lakehouse.items.begin_create_lakehouse(
+                workspace_id, CreateLakehouseRequest(display_name=name)
+            )
         )
         # `result` is populated by a done callback that has usually already fired for a
         # lakehouse, but relying on that is a race. Resolve the item by name instead.
@@ -865,12 +880,14 @@ def create_or_get_ontology(workspace_id: str, name: str) -> dict:
         return existing
 
     log_message(f"Creating ontology '{name}'...")
-    get_fabric_client().ontology.items.begin_create_ontology(
-        workspace_id,
-        CreateOntologyRequest(
-            display_name=name,
-            description="Ontology for the Contoso DIY lakehouse data.",
-        ),
+    start_create(
+        lambda: get_fabric_client().ontology.items.begin_create_ontology(
+            workspace_id,
+            CreateOntologyRequest(
+                display_name=name,
+                description="Ontology for the Contoso DIY lakehouse data.",
+            ),
+        )
     )
     # The SDK resolves this long running operation through an asynchronous done
     # callback, so the returned result is still empty here. Poll for the item.

@@ -22,6 +22,8 @@ $ErrorActionPreference = "Continue"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $env:PYTHONIOENCODING = "utf-8"
 $env:PYTHONUNBUFFERED = "1"
+# microsoft-fabric-api docstrings emit hundreds of SyntaxWarnings the first time they compile.
+$env:PYTHONWARNINGS = "ignore::SyntaxWarning"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
@@ -193,24 +195,5 @@ foreach ($step in $fabricSteps) {
     }
 }
 if ($fabricReady) { Log "READY: Fabric IQ notebooks" } else { Log "NOT READY: Fabric IQ notebooks" }
-
-# Stage 7: fill the MCP server placeholders now that the Fabric IDs exist
-$null = Invoke-Step "Fill .vscode\mcp.json" {
-    $envValues = @{}
-    foreach ($line in Get-Content .env) {
-        if ($line -match '^\s*([A-Za-z_][A-Za-z0-9_]*)=(.*)$') {
-            $envValues[$Matches[1]] = $Matches[2].Trim("'`"")
-        }
-    }
-    $mcpPath = ".vscode\mcp.json"
-    $mcpJson = Get-Content $mcpPath -Raw
-    foreach ($name in "AZURE_AI_SEARCH_SERVICE_NAME", "FABRIC_WORKSPACE_ID", "FABRIC_ONTOLOGY_ID") {
-        if ($envValues[$name]) {
-            $mcpJson = $mcpJson -replace "\{$name\}", $envValues[$name]
-        }
-    }
-    Set-Content $mcpPath $mcpJson -NoNewline
-    $global:LASTEXITCODE = 0
-}
 
 Log "=== Lab setup completed ==="
