@@ -67,12 +67,30 @@ $azdEnvReady = $false
 $agentsReady = $false
 
 # Stage 1: Python environment
-$null = Invoke-Step "Install uv" { python -m pip install --upgrade uv --disable-pip-version-check }
-if (-not (Invoke-Step "Install Python dependencies" { python -m uv sync --locked --all-groups })) {
+# The VM's Python has no pip module, but a venv bootstraps its own pip through ensurepip.
+$uvBin = Join-Path $env:USERPROFILE ".local\bin"
+$uv = Join-Path $uvBin "uv.exe"
+if (-not (Test-Path $uv)) {
+    $uvBootstrap = Join-Path $env:TEMP "uv-bootstrap"
+    $null = Invoke-Step "Install uv" {
+        python -m venv $uvBootstrap
+        & (Join-Path $uvBootstrap "Scripts\python.exe") -m pip install --upgrade uv --disable-pip-version-check
+        New-Item $uvBin -ItemType Directory -Force | Out-Null
+        Copy-Item (Join-Path $uvBootstrap "Scripts\uv*.exe") $uvBin -Force
+    }
+}
+# The azd postdeploy hook and attendee terminals call uv from PATH.
+$env:Path = "$uvBin;$env:Path"
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($userPath -notlike "*$uvBin*") {
+    [Environment]::SetEnvironmentVariable("Path", "$uvBin;$userPath", "User")
+}
+# uv downloads a managed Python if the VM's Python is older than pyproject.toml requires.
+if (-not (Invoke-Step "Install Python dependencies" { & $uv sync --locked --all-groups })) {
     Log "=== Lab setup FAILED: cannot continue without Python dependencies ==="
     exit 1
 }
-$null = Invoke-Step "Install notebook dependencies" { python -m uv pip install --python $python -r notebooks\requirements.txt }
+$null = Invoke-Step "Install notebook dependencies" { & $uv pip install --python $python -r notebooks\requirements.txt }
 
 # Stage 2: .env for the notebooks and agents
 if (-not (Invoke-Step "Write .env" { & $python infra\setup-env.py })) {
