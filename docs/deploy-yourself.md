@@ -9,7 +9,7 @@ In order to run all of the examples, you will need a tenant with multiple licens
 * An Azure subscription with permission to create resources and role assignments
 * Quota in one region for `gpt-5.4`, and `text-embedding-3-large`
 * For Fabric IQ notebooks: A Fabric-capable tenant and a Fabric/Power BI license (or active Fabric trial), with permission to create an F2 capacity
-* For Web IQ notebook: Access to the private preview with an assigned `WEB_IQ_KEY`
+* For Web IQ notebook: Access to the Web IQ portal to get the account's key
 * For Work IQ notebooks and agents: Work IQ access for each caller (a Microsoft 365 Copilot license for the direct notebooks and agents, and a Copilot credits plan for Work IQ through Azure AI Search), a tenant enabled for Work IQ,
   and a Global Administrator for the one-time Entra app registration and admin consent
 * For Work IQ through Azure AI Search: the Search service's managed identity must be in the same tenant as your subscription (`az search service show --query identity.tenantId`). A service whose identity belongs to another tenant, for example after a subscription tenant move, cannot authenticate to Azure OpenAI or Work IQ.
@@ -119,6 +119,9 @@ A related option is VS Code Dev Containers, which will open the project in your 
     [the hosted Foundry IQ Work IQ agent](#enable-the-hosted-foundry-iq-work-iq-agent), and
     [the hosted Work IQ toolbox agent](#enable-the-hosted-work-iq-toolbox-agent).
     You can also set any of these later and re-run `azd provision`.
+
+    A Web IQ account is always created. After provisioning, get its key from the Web IQ portal, since it
+    isn't available through Azure yet, and set `WEB_IQ_KEY` in `.env`.
 
     The Fabric scripts build portal links from `https://app.fabric.microsoft.com`. If your tenant uses a
     different Fabric host, set it in the same way, before you provision:
@@ -315,6 +318,7 @@ Endpoint notebooks, which skip the knowledge base and call a service endpoint di
 | Notebook | What it covers |
 | --- | --- |
 | `foundryiq-mcp.ipynb` | Calls `knowledge_base_retrieve` on the `contoso-company-kb-minimal` MCP endpoint |
+| `webiq-mcp.ipynb` | Inspects and calls the Web IQ MCP tools to search the web and news and read a page. Requires `WEB_IQ_KEY` in `.env`. |
 | `fabriciq-ontology-mcp.ipynb` | Inspects and calls the tools on the Fabric ontology MCP endpoint |
 | `fabriciq-dataagent-mcp.ipynb` | Inspects and calls the tools on the published Fabric Data Agent MCP endpoint |
 | `fabriciq-graph.ipynb` | Sends GQL to the Fabric Graph `executeQuery` REST API |

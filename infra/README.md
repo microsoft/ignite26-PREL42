@@ -14,6 +14,7 @@
 | `core/search/azure_ai_search.bicep` | Azure AI Search (serverless by default) and its role assignments |
 | `core/storage/storage.bicep` | Storage account and its project connection |
 | `core/fabric/fabric-capacity.bicep` | Optional Fabric capacity |
+| `core/webiq/webiq.bicep` | Web IQ grounding account. Its key comes from the Web IQ portal, not Azure |
 
 ## Setup scripts
 

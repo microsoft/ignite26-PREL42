@@ -117,6 +117,14 @@ module fabricCapacity 'core/fabric/fabric-capacity.bicep' = if (enableFabricCapa
   }
 }
 
+module webIq 'core/webiq/webiq.bicep' = {
+  name: 'webiq'
+  params: {
+    name: 'webiq-${uniqueString(subscription().id, resourceGroup().id)}'
+    tags: tags
+  }
+}
+
 output AZURE_RESOURCE_GROUP string = resourceGroup().name
 output AZURE_LOCATION string = location
 output AZURE_AI_ACCOUNT_ID string = aiProject.outputs.accountId

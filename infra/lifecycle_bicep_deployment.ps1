@@ -120,7 +120,7 @@ $tenantId = "@lab.CloudSubscription.TenantId"
 $subscriptionId = "@lab.CloudSubscription.Id"
 $resourceGroupName = "@lab.CloudResourceGroup(PREL42-ResourceGroup).Name"
 $labUserUpn = "@lab.CloudPortalCredential(User1).Username"
-# Optional Web IQ key for foundryiq-webiq.ipynb; leave empty until key distribution is decided.
+# Web IQ key for the Web IQ exercise and foundryiq-webiq.ipynb, from the Web IQ portal.
 $webIqKey = ""
 
 $bicepFilePath = Join-Path $repoRoot "infra\main.bicep"

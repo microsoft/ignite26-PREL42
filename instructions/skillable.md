@@ -2,7 +2,7 @@
 
 ## Overview
 
-In this lab, you give AI agents context with Microsoft IQ: Web IQ for the web, Fabric IQ for structured business data, Work IQ for your Microsoft 365 work, and Foundry IQ knowledge bases that bring them together. For each one, you first call it from a Python notebook, and then add it as an MCP server in the GitHub Copilot app. You finish by running Microsoft Agent Framework agents locally and as Foundry hosted agents.
+In this lab, you give AI agents context with Microsoft IQ: Web IQ for the web, Fabric IQ for structured business data, Work IQ for your Microsoft 365 work, and Foundry IQ knowledge bases that bring them together. For Web IQ, Fabric IQ, and Work IQ, you first call them from Python notebooks; for every IQ, you add it as an MCP server in the GitHub Copilot app. In the Foundry IQ exercise, you bring them all together as knowledge sources in a Foundry IQ knowledge base. You finish by running Microsoft Agent Framework agents locally and as Foundry hosted agents.
 
 The scenario is Contoso, a DIY retailer: HR and benefits documents in Azure AI Search, product, store, and inventory data in Fabric, and inventory emails in your mailbox.
 
@@ -79,14 +79,15 @@ In the exercises, you will connect GitHub Copilot app to each IQ so you can quer
 
 Web IQ grounds answers in current web content.
 
-> [!NOTE]
-> This exercise needs a Web IQ key. In the Visual Studio Code terminal, run +++Get-Content .env | Select-String "WEB_IQ_KEY"+++. If it shows no key, skip to the next exercise.
+First, get your Web IQ key by running this in the Visual Studio Code terminal:
+
++++Get-Content .env | Select-String "WEB_IQ_KEY"+++
 
 ## Call Web IQ from a notebook
 
-1. Open **notebooks/foundryiq-webiq.ipynb**.
-2. Select **Select Kernel > Python Environments**, and then select the **.venv** environment in the lab folder.
-3. Run each cell. You add an MCP server knowledge source backed by Web IQ to a knowledge base, so answers combine the HR documents with web results.
+1. Open **notebooks/webiq-mcp.ipynb**.
+2. Select **Select Kernel > Python Environments**, and then select the **.venv** environment in the lab folder if it isn't already selected.
+3. Run each cell. You call the Web IQ MCP endpoint directly to search the web, search the news, and read a web page.
 
 ## Use Web IQ in the GitHub Copilot app
 
@@ -110,12 +111,11 @@ Fabric IQ gives agents structured business data from Microsoft Fabric. Your Fabr
 
 ## Call Fabric IQ from notebooks
 
-In each notebook, select **Select Kernel > Python Environments > .venv** if it isn't already selected. When a notebook opens a browser sign-in, use your lab credentials.
+When you open each notebook, select **Select Kernel > Python Environments**, and then select the **.venv** environment in the lab folder if it isn't already selected. When a notebook opens a browser sign-in, use your lab credentials.
 
 1. Open **notebooks/fabriciq-ontology-mcp.ipynb** and run each cell. You call the ontology's MCP endpoint directly.
-2. Open **notebooks/foundryiq-fabriciq-ontology.ipynb** and run each cell. You add the ontology as a knowledge source in a Foundry IQ knowledge base.
-3. Open **notebooks/foundryiq-fabriciq-dataagent.ipynb** and run each cell. You add the Fabric data agent as a knowledge source for analytical questions.
-4. Optional: try **notebooks/fabriciq-dataagent-mcp.ipynb** and **notebooks/fabriciq-graph.ipynb**.
+2. Open **notebooks/fabriciq-graph.ipynb** and run each cell. You query the product review graph with GQL over the Fabric REST API.
+3. Open **notebooks/fabriciq-dataagent-mcp.ipynb** and run each cell. You call the Fabric data agent's MCP endpoint for analytical questions.
 
 ## Use Fabric IQ in the GitHub Copilot app
 
@@ -156,8 +156,7 @@ In each notebook, select **Select Kernel > Python Environments > .venv** if it i
 
 1. Open **notebooks/workiq-api-concepts.ipynb** and run each cell. You learn the Work IQ API concepts and ask about your own work context.
 2. Open **notebooks/workiq-mcp.ipynb** and run each cell. You call Work IQ as a tool through its MCP server.
-3. Open **notebooks/foundryiq-workiq.ipynb** and run each cell. You add a Work IQ knowledge source, so a knowledge base can search your emails alongside the HR documents.
-4. Optional: try **notebooks/workiq-tools-actions.ipynb** and **notebooks/workiq-a2a.ipynb**.
+3. Optional: try **notebooks/workiq-tools-actions.ipynb** and **notebooks/workiq-a2a.ipynb**.
 
 ## Use Work IQ in the GitHub Copilot app
 
@@ -180,10 +179,14 @@ Foundry IQ knowledge bases combine knowledge sources, such as search indexes, Fa
 
 ## Call Foundry IQ from notebooks
 
-In each notebook, select **Select Kernel > Python Environments > .venv** if it isn't already selected.
+In each notebook, select **Select Kernel > Python Environments > .venv** if it isn't already selected. When a notebook opens a browser sign-in, use your lab credentials.
 
 1. Open **notebooks/foundryiq-basic.ipynb** and run each cell. You build a multi-source knowledge base over the HR and health indexes and query it with agentic retrieval.
 2. Open **notebooks/foundryiq-mcp.ipynb** and run each cell. You call a knowledge base through its MCP endpoint.
+3. Open **notebooks/foundryiq-fabriciq-ontology.ipynb** and run each cell. You add the Fabric IQ ontology as a knowledge source.
+4. Open **notebooks/foundryiq-fabriciq-dataagent.ipynb** and run each cell. You add the Fabric data agent as a knowledge source for analytical questions.
+5. Open **notebooks/foundryiq-workiq.ipynb** and run each cell. You add a Work IQ knowledge source, so a knowledge base can search your emails alongside the HR documents.
+6. Open **notebooks/foundryiq-webiq.ipynb** and run each cell. You add a Web IQ knowledge source, so answers combine the HR documents with web results.
 
 ## Use Foundry IQ in the GitHub Copilot app
 
