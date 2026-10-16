@@ -79,9 +79,21 @@ In the exercises, you will connect GitHub Copilot app to each IQ so you can quer
 
 Web IQ grounds answers in current web content.
 
-First, get your Web IQ key by running this in the Visual Studio Code terminal:
+## Get your Web IQ key
 
-+++Get-Content .env | Select-String "WEB_IQ_KEY"+++
+A Web IQ resource was created for you in your resource group. Get its API key from the Web IQ portal:
+
+1. In the browser, go to +++https://webiq.microsoft.ai/profiles+++.
+2. Select **Sign in**, and sign in with your lab credentials.
+3. In **Select an Azure Resource**, select your lab subscription for **Azure subscription**, and then select the resource that starts with **webiq-** for **Resource**. Select **Finish**.
+4. Select **Profile Management** in the left menu.
+5. Under **Authentication > API Keys**, select the copy icon next to the **default** key.
+
+Then save the key so the notebooks can use it:
+
+1. In Visual Studio Code, open the **.env** file in the lab folder.
+2. Find the line that starts with **WEB_IQ_KEY=**, or add it at the end of the file if it's missing, and paste the key after the equals sign. For example: **WEB_IQ_KEY=your-key**.
+3. Save the file.
 
 ## Call Web IQ from a notebook
 
@@ -96,7 +108,7 @@ First, get your Web IQ key by running this in the Visual Studio Code terminal:
     - **Server name**: +++web-iq+++
     - **Server type**: HTTP
     - **URL**: +++https://api.microsoft.ai/v3/mcp+++
-3. Select **Add header**, and enter the name +++x-apikey+++ and the **WEB_IQ_KEY** value that the command above showed.
+3. Select **Add header**, and enter the name +++x-apikey+++ and your Web IQ key as the value.
 4. Select **Add server**, and check that the server is turned on in the **MCP Servers** list.
 
 Then select **New** and ask:

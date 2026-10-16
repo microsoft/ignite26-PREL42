@@ -13,7 +13,6 @@ param(
     [Parameter(Mandatory)][string]$OutputsFile,
     [Parameter(Mandatory)][string]$LabUserUpn,
     [Parameter(Mandatory)][string]$LabUserObjectId,
-    [string]$WebIqKey = "",
     [string]$LogFile = "C:\Users\LabUser\Desktop\lifecycle-log.txt"
 )
 
@@ -98,10 +97,6 @@ $null = Invoke-Step "Install notebook dependencies" { & $uv pip install --python
 if (-not (Invoke-Step "Write .env" { & $python infra\setup-env.py })) {
     Log "=== Lab setup FAILED: .env could not be written ==="
     exit 1
-}
-if ($WebIqKey) {
-    $env:WEB_IQ_KEY = $WebIqKey
-    $null = Invoke-Step "Write WEB_IQ_KEY" { & $python -c "import os; from dotenv import set_key; set_key('.env', 'WEB_IQ_KEY', os.environ['WEB_IQ_KEY'], quote_mode='never')" }
 }
 
 # Stage 3: Foundry IQ knowledge bases and toolboxes

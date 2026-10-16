@@ -88,7 +88,6 @@ try {
       -OutputsFile $outputsFile `
       -LabUserUpn $env:BG_LAB_USER_UPN `
       -LabUserObjectId $env:BG_LAB_USER_OID `
-      -WebIqKey $env:BG_WEB_IQ_KEY `
       -LogFile $logFile
 }
 finally {
@@ -120,8 +119,6 @@ $tenantId = "@lab.CloudSubscription.TenantId"
 $subscriptionId = "@lab.CloudSubscription.Id"
 $resourceGroupName = "@lab.CloudResourceGroup(PREL42-ResourceGroup).Name"
 $labUserUpn = "@lab.CloudPortalCredential(User1).Username"
-# Web IQ key for the Web IQ exercise and foundryiq-webiq.ipynb, from the Web IQ portal.
-$webIqKey = ""
 
 $bicepFilePath = Join-Path $repoRoot "infra\main.bicep"
 if (-not (Test-Path $bicepFilePath)) {
@@ -155,7 +152,6 @@ $env:BG_SP_OBJECT_ID = $spObjectId
 $env:BG_CLIENT_ID = $clientId
 $env:BG_CLIENT_SECRET = $clientSecret
 $env:BG_TENANT_ID = $tenantId
-$env:BG_WEB_IQ_KEY = $webIqKey
 
 Log "Launching background deploy process..."
 Start-Process -FilePath "powershell.exe" `
