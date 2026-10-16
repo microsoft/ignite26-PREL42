@@ -10,8 +10,8 @@ The scenario is Contoso, a DIY retailer: HR and benefits documents in Azure AI S
 
 Sign in to the virtual machine with these credentials:
 
-- **User name**: +++@lab.VirtualMachine(Win11-Pro-Base).Username+++
-- **Password**: +++@lab.VirtualMachine(Win11-Pro-Base).Password+++
+- **User name**: +++@lab.VirtualMachine(ILL344-Win11).Username+++
+- **Password**: +++@lab.VirtualMachine(ILL344-Win11).Password+++
 
 ## Set up Visual Studio Code
 
