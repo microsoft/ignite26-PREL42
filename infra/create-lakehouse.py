@@ -201,7 +201,7 @@ def update_root_env(values: dict):
     """Update the repo root .env file with key=value pairs (append or replace)."""
     env_path = os.path.join(REPO_ROOT, ".env")
     for key, val in values.items():
-        set_key(env_path, key, val)
+        set_key(env_path, key, val, quote_mode="never")
 
 
 def log_message(message: str):

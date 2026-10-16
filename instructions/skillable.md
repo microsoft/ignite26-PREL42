@@ -53,7 +53,9 @@ The notebooks and agents will use your Azure Developer CLI sign-in.
 
 ## Sign in to GitHub
 
-1. In the browser, sign in through the [Skillable Events GitHub enterprise](https://github.com/enterprises/skillable-events/sso).
+1. In the browser, sign in in the GitHub enterprise organization for Skillable:
+
+    ++https://github.com/enterprises/skillable-events/sso++
 
 You will be signed into a special account created for the lab environment, not your actual GitHub account.
 
@@ -61,9 +63,13 @@ You will be signed into a special account created for the lab environment, not y
 
 In the exercises, you will connect GitHub Copilot app to each IQ so you can query it from a chat.
 
-1. Open the **GitHub Copilot** app. If prompted, sign in with the GitHub account from the previous step.
-2. Don't open the lab folder in the GitHub Copilot app. Use the app only for chat. You will use VS Code for interacting with the lab folder.
-3. Select **New** and say hi to the agent. For example:
+1. Open the **GitHub Copilot** app.
+2. Select **Sign in to GitHub**.
+3. When the browser opens, select the lab GitHub account.
+4. Paste the 8-digit code from the app screen.
+5. Select **Authorize GitHub**.
+6. On the next screen, do not select any folder, simply select **Continue**. You will use the app only for chat; you will use VS Code for interacting with the lab folder.
+7. Send a message to the agent in the chat box, such as:
 
     +++What are some good restaurants near Moscone Center in San Francisco?+++
 
