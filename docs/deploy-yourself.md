@@ -318,14 +318,13 @@ Endpoint notebooks, which skip the knowledge base and call a service endpoint di
 | Notebook | What it covers |
 | --- | --- |
 | `foundryiq-mcp.ipynb` | Calls `knowledge_base_retrieve` on the `contoso-company-kb-minimal` MCP endpoint |
-| `webiq-mcp.ipynb` | Inspects and calls the Web IQ MCP tools to search the web and news and read a page. Requires `WEB_IQ_KEY` in `.env`. |
+| `webiq-mcp.ipynb` | Inspects and calls the Web IQ MCP tools to search the web, images, and videos. Requires `WEB_IQ_KEY` in `.env`. |
 | `fabriciq-ontology-mcp.ipynb` | Inspects and calls the tools on the Fabric ontology MCP endpoint |
 | `fabriciq-dataagent-mcp.ipynb` | Inspects and calls the tools on the published Fabric Data Agent MCP endpoint |
 | `fabriciq-graph.ipynb` | Sends GQL to the Fabric Graph `executeQuery` REST API |
-| `workiq-api-concepts.ipynb` | Work IQ API concepts and the signed-in user's work context |
-| `workiq-a2a.ipynb` | Delegates a task to the Work IQ Relay Agent over A2A |
-| `workiq-mcp.ipynb` | Consumes Work IQ as a tool through its MCP server |
-| `workiq-tools-actions.ipynb` | The full Work IQ MCP tool catalog and its resource-path model |
+| `workiq-mcp.ipynb` | Authenticates, lists tools, asks about work context, and discovers schemas and structured data through the read tools |
+| `workiq-mcp-actions.ipynb` | Optional write-tool examples: inspect schemas, preview payloads, and approve individual mutations; writes are disabled by default |
+| `workiq-a2a.ipynb` | Optionally discovers the Work IQ Agent Card and delegates an email-summary task over A2A |
 
 When you run a notebook, select the `.venv/bin/python` virtual environment (`.venv\Scripts\python.exe` on Windows).
 

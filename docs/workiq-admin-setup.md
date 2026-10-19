@@ -26,8 +26,11 @@ uv run python infra/create-workiq-entra.py --apply
 The script creates a single-tenant public-client app that exposes `access_as_user`, grants tenant-wide admin
 consent for `WorkIQAgent.Ask`, adds the federated credential for the Azure AI Search managed identity, and
 writes `WORK_IQ_SEARCH_ENTRA_APP_ID`, `WORK_IQ_SEARCH_ENTRA_TENANT_ID`, and
-`WORK_IQ_SEARCH_FEDERATED_CREDENTIAL_ID` to `.env`. The `workiq-*` notebooks use the same app for sign-in
-when `ENTRA_APP_ID` is not set, so no separate app registration is needed.
+`WORK_IQ_SEARCH_FEDERATED_CREDENTIAL_ID` to `.env`. The `workiq-*` notebooks use the same app for sign-in,
+so no separate app registration is needed. Each direct Work IQ notebook reads the
+`WORK_IQ_SEARCH_ENTRA_APP_ID` and `WORK_IQ_SEARCH_ENTRA_TENANT_ID` values directly and shows its own
+MSAL browser sign-in code without shared authentication helpers.
+
 ## For the Foundry `work_iq_preview` tool connection
 
 The hosted `workmate-agent` connects to Work IQ through a Foundry **`RemoteA2A`** project
@@ -50,7 +53,7 @@ One Work IQ Entra app (created by `infra/create-workiq-entra.py`, `WORK_IQ_SEARC
 | Path | How the app is used |
 |---|---|
 | `foundryiq-workiq.ipynb` | Azure AI Search calls Work IQ as the app through a federated credential (billed with Copilot credits) |
-| Direct `workiq-*` notebooks | Interactive sign-in for `api://<app>/access_as_user` |
+| Direct `workiq-*` notebooks | Interactive sign-in for `api://workiq.svc.cloud.microsoft/WorkIQAgent.Ask` |
 | `agent-toolbox-workiq`, `agent-workiq-maf` | The app's client secret backs the Foundry `RemoteA2A` OAuth2 connection |
 
 ## Troubleshooting

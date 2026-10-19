@@ -1,4 +1,4 @@
-# Lifecycle — Write a self-contained background script that handles everything
+# Lifecycle - Write a self-contained background script that handles everything
 # after az login: deploy, fetch outputs, run setup.
 # This lets the Skillable lifecycle action exit quickly (< 600s).
 # Run the repo download LCA first so the repository is at $repoRoot.
@@ -69,6 +69,21 @@ try {
               -o json 2>&1
             Log "Operation errors:"
             Add-Content -Path $logFile -Value $opErrors -Encoding UTF8
+            # Module failures wrap the real error in a nested deployment, so log its operations too.
+            $nestedDeployments = az deployment operation group list `
+              --resource-group $resourceGroupName `
+              --name $deploymentName `
+              --query "[?properties.provisioningState=='Failed' && properties.targetResource.resourceType=='Microsoft.Resources/deployments'].properties.targetResource.resourceName" `
+              -o tsv 2>$null
+            foreach ($nested in $nestedDeployments) {
+                $nestedErrors = az deployment operation group list `
+                  --resource-group $resourceGroupName `
+                  --name $nested `
+                  --query "[?properties.provisioningState=='Failed'].{Resource:properties.targetResource.resourceName, Type:properties.targetResource.resourceType, Error:properties.statusMessage}" `
+                  -o json 2>&1
+                Log "Operation errors in nested deployment ${nested}:"
+                Add-Content -Path $logFile -Value $nestedErrors -Encoding UTF8
+            }
         } else {
             Log "Deployment was never created in Azure (validation or CLI error above)."
         }
@@ -89,6 +104,11 @@ try {
       -LabUserUpn $env:BG_LAB_USER_UPN `
       -LabUserObjectId $env:BG_LAB_USER_OID `
       -LogFile $logFile
+}
+catch {
+    Log "ERROR: $_"
+    Log "=== Background deploy script FAILED ==="
+    throw
 }
 finally {
     az logout 2>&1 | Out-Null

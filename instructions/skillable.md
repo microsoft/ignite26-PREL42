@@ -55,7 +55,7 @@ The notebooks and agents will use your Azure Developer CLI sign-in.
 
 1. In the browser, sign in in the GitHub enterprise organization for Skillable:
 
-    ++https://github.com/enterprises/skillable-events/sso++
+    +++https://github.com/enterprises/skillable-events/sso+++
 
 You will be signed into a special account created for the lab environment, not your actual GitHub account.
 
@@ -84,22 +84,27 @@ Web IQ grounds answers in current web content.
 A Web IQ resource was created for you in your resource group. Get its API key from the Web IQ portal:
 
 1. In the browser, go to +++https://webiq.microsoft.ai/profiles+++.
-2. Select **Sign in**, and sign in with your lab credentials.
+2. In the sign-in prompt, select your lab account.
 3. In **Select an Azure Resource**, select your lab subscription for **Azure subscription**, and then select the resource that starts with **webiq-** for **Resource**. Select **Finish**.
-4. Select **Profile Management** in the left menu.
-5. Under **Authentication > API Keys**, select the copy icon next to the **default** key.
+4. Select **Profile Management** in the left menu. Under **Authentication > API Keys**, select the copy icon next to the **default** key.
 
 Then save the key so the notebooks can use it:
 
 1. In Visual Studio Code, open the **.env** file in the lab folder.
-2. Find the line that starts with **WEB_IQ_KEY=**, or add it at the end of the file if it's missing, and paste the key after the equals sign. For example: **WEB_IQ_KEY=your-key**.
+2. Add a new line at the end of the file with **WEB_IQ_KEY=**, and paste the key after the equals sign. For example: **WEB_IQ_KEY=your-key**.
 3. Save the file.
 
 ## Call Web IQ from a notebook
 
 1. Open **notebooks/webiq-mcp.ipynb**.
-2. Select **Select Kernel > Python Environments**, and then select the **.venv** environment in the lab folder if it isn't already selected.
-3. Run each cell. You call the Web IQ MCP endpoint directly to search the web, search the news, and read a web page.
+2. Select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
+3. Run each cell. You call the Web IQ MCP endpoint directly to search the web, images, and videos.
+
+**⚠️ Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
+
+1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
+2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
+3. Close VS Code completely and restart it.
 
 ## Use Web IQ in the GitHub Copilot app
 
@@ -108,12 +113,12 @@ Then save the key so the notebooks can use it:
     - **Server name**: +++web-iq+++
     - **Server type**: HTTP
     - **URL**: +++https://api.microsoft.ai/v3/mcp+++
-3. Select **Add header**, and enter the name +++x-apikey+++ and your Web IQ key as the value.
-4. Select **Add server**, and check that the server is turned on in the **MCP Servers** list.
+3. Select **Add header**, and enter the name +++x-apikey+++. Switch to Visual Studio Code, copy the **WEB_IQ_KEY** value from **.env**, and then switch back to the app and paste it as the header value.
+4. Select **Add server**, and then switch to the **Installed** tab. Under **MCP Servers**, confirm that the server is toggled on and has a green check mark.
 
 Then select **New** and ask:
 
-+++Use Web IQ to find recent news about mental health benefits trends for employers.+++
++++Use Web IQ to search the web for recent trends in mental health benefits for employers.+++
 
 ===
 
@@ -121,32 +126,50 @@ Then select **New** and ask:
 
 Fabric IQ gives agents structured business data from Microsoft Fabric. Your Fabric workspace has a Contoso DIY lakehouse, an ontology over products, stores, suppliers, and inventory, a product review graph, a web analytics semantic model, and a published Fabric data agent.
 
+## Explore your Fabric workspace
+
+Before calling Fabric IQ from code, explore the data and relationships in the Fabric portal. These items are already created for you; you don't need to create or edit them.
+
+1. In the browser, go to +++https://app.fabric.microsoft.com+++ and sign in with your lab credentials.
+2. Select **Workspaces**, and open the workspace whose name starts with **ContosoDIY-**.
+3. Open **ContosoDIYLakehouse**. Under **Tables**, select a few tables to preview their rows. Look at the products, stores, and inventory data that you will ask about later.
+4. Return to the workspace and open **ContosoDIYOntology**. Explore the **Product**, **Category**, **Store**, **Inventory**, and **Supplier** entities. Inspect their properties and relationships: how does the ontology connect a product to the stores that stock it?
+5. Return to the workspace and open **ContosoDIYReviewGraph**. Explore the graph's node and edge types. Look for **Product**, **Reviewer**, **Review**, and **Feature**, and see how the relationships connect reviews to products and features. In the **Components** pane, expand **Edges > MENTIONS** to see the **sentiment**, **confidence**, and **evidenceExcerpt** properties. These properties describe the sentiment of a review's mention of a particular feature, adding feature-level sentiment context to the product catalog.
+6. Return to the workspace and open the **ContosoWebAnalytics** semantic model. Explore the relationship diagram. In the **Data** pane on the right, expand **Sessions** to see fields such as **Converted** and **RevenueAmount**, and expand **Channels** to see **Channel** and **ChannelGroup**. Follow the relationship line between these tables in the diagram to see how sessions connect to marketing channels. You are inspecting the model's structure, not previewing data rows.
+7. Return to the workspace and open **ContosoDIYDataAgent**. Review its configured data sources: the ontology, review graph, and web analytics semantic model. The data agent brings these sources together so you can ask analytical questions in natural language.
+
 ## Call Fabric IQ from notebooks
 
-When you open each notebook, select **Select Kernel > Python Environments**, and then select the **.venv** environment in the lab folder if it isn't already selected. When a notebook opens a browser sign-in, use your lab credentials.
+When you open each notebook, select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
 
 1. Open **notebooks/fabriciq-ontology-mcp.ipynb** and run each cell. You call the ontology's MCP endpoint directly.
 2. Open **notebooks/fabriciq-graph.ipynb** and run each cell. You query the product review graph with GQL over the Fabric REST API.
 3. Open **notebooks/fabriciq-dataagent-mcp.ipynb** and run each cell. You call the Fabric data agent's MCP endpoint for analytical questions.
 
+**⚠️ Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
+
+1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
+2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
+3. Close VS Code completely and restart it.
+
 ## Use Fabric IQ in the GitHub Copilot app
+
+**⚠️ Known issue:** Fabric IQ MCP servers currently cannot sign in to the GitHub Copilot app on Windows because of a Microsoft Entra authentication issue. We are tracking the issue in [GitHub issue #14](https://github.com/microsoft/ignite26-PREL42/issues/14).
 
 Add two MCP servers, one for the ontology and one for the data agent. Both sign you in with your Microsoft Entra account, so they don't need headers.
 
-To get their URLs, run this in the Visual Studio Code terminal:
-
-+++Get-Content .env | Select-String "FABRIC_.*_MCP_URL"+++
+In Visual Studio Code, open the **.env** file in the lab folder and find **FABRIC_ONTOLOGY_MCP_URL** and **FABRIC_DATA_AGENT_MCP_URL**. Keep the file open so you can switch back to it when each URL is needed.
 
 1. In the GitHub Copilot app, select **Customize**, and then select **Add > MCP Server...**.
 2. Enter these values, and then select **Add server**:
     - **Server name**: +++fabric-iq-ontology+++
     - **Server type**: HTTP
-    - **URL**: the **FABRIC_ONTOLOGY_MCP_URL** value, everything after the **=**
+    - **URL**: switch to Visual Studio Code, copy the complete **FABRIC_ONTOLOGY_MCP_URL** value from **.env**, and switch back to the app to paste it. Copy only the URL after the first **=**, without surrounding quotes.
 3. Select **Add > MCP Server...** again, enter these values, and then select **Add server**:
     - **Server name**: +++fabric-iq-data-agent+++
     - **Server type**: HTTP
-    - **URL**: the **FABRIC_DATA_AGENT_MCP_URL** value, everything after the **=**
-4. Check that both servers are turned on in the **MCP Servers** list. When prompted, sign in with your lab credentials.
+    - **URL**: switch to Visual Studio Code, copy the complete **FABRIC_DATA_AGENT_MCP_URL** value from **.env**, and switch back to the app to paste it. Copy only the URL after the first **=**, without surrounding quotes.
+4. Switch to the **Installed** tab. Under **MCP Servers**, confirm that both servers are toggled on and each has a green check mark. When prompted, sign in with your lab credentials.
 
 Then select **New** and ask:
 
@@ -160,17 +183,34 @@ Then select **New** and ask:
 
 Work IQ gives agents your Microsoft 365 work context: email, meetings, files, chats, and people. It always uses your own permissions.
 
-Your mailbox has three emails about an out-of-stock Professional Claw Hammer. Open Outlook in the browser to see them.
+## Explore your sample emails
+
+Your mailbox has three emails about an out-of-stock Professional Claw Hammer. Read them before asking Work IQ about them.
+
+1. In the browser, go to +++https://outlook.office.com+++ and sign in with your lab credentials if prompted.
+2. Open your **Inbox** and find the three sample emails about the **Professional Claw Hammer**.
+3. Open each email and read the inventory updates, customer concerns, and requested actions. You will use Work IQ to summarize this context later in the exercise.
 
 ## Call Work IQ from notebooks
 
-In each notebook, select **Select Kernel > Python Environments > .venv** if it isn't already selected. When a notebook opens a browser sign-in, use your lab credentials.
+In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
 
-1. Open **notebooks/workiq-api-concepts.ipynb** and run each cell. You learn the Work IQ API concepts and ask about your own work context.
-2. Open **notebooks/workiq-mcp.ipynb** and run each cell. You call Work IQ as a tool through its MCP server.
-3. Optional: try **notebooks/workiq-tools-actions.ipynb** and **notebooks/workiq-a2a.ipynb**.
+1. Open **notebooks/workiq-mcp.ipynb** and run each cell. You sign in, list the tools, ask about the sample emails, discover resource paths and schemas, fetch structured email data, and discover agents.
+2. Open **notebooks/workiq-mcp-actions.ipynb** to explore the write tools, inspect schemas, and preview create, update, delete, and send-mail operations. Writes are disabled by default.
+
+    **⚠️ Known issue:** Work IQ MCP actions currently do not work in the Skillable lab. The lab advertises only read operations, and calendar write-schema requests are denied. Skip this step for now, including its schema-discovery cell, which can fail even when writes are disabled. We are tracking the issue in [GitHub issue #15](https://github.com/microsoft/ignite26-PREL42/issues/15).
+
+3. Open **notebooks/workiq-a2a.ipynb** to discover Work IQ as a remote agent and delegate an email-summary task through A2A.
+
+**⚠️ Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
+
+1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
+2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
+3. Close VS Code completely and restart it.
 
 ## Use Work IQ in the GitHub Copilot app
+
+**⚠️ Known issue:** The WorkIQ plugin currently cannot authenticate in the GitHub Copilot app on the Skillable Windows machine. We are tracking this issue in [GitHub issue #16](https://github.com/microsoft/ignite26-PREL42/issues/16).
 
 Work IQ is available as a plugin, so you install it instead of adding the MCP server yourself.
 
@@ -191,7 +231,7 @@ Foundry IQ knowledge bases combine knowledge sources, such as search indexes, Fa
 
 ## Call Foundry IQ from notebooks
 
-In each notebook, select **Select Kernel > Python Environments > .venv** if it isn't already selected. When a notebook opens a browser sign-in, use your lab credentials.
+In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
 
 1. Open **notebooks/foundryiq-basic.ipynb** and run each cell. You build a multi-source knowledge base over the HR and health indexes and query it with agentic retrieval.
 2. Open **notebooks/foundryiq-mcp.ipynb** and run each cell. You call a knowledge base through its MCP endpoint.
@@ -200,17 +240,21 @@ In each notebook, select **Select Kernel > Python Environments > .venv** if it i
 5. Open **notebooks/foundryiq-workiq.ipynb** and run each cell. You add a Work IQ knowledge source, so a knowledge base can search your emails alongside the HR documents.
 6. Open **notebooks/foundryiq-webiq.ipynb** and run each cell. You add a Web IQ knowledge source, so answers combine the HR documents with web results.
 
+**⚠️ Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
+
+1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
+2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
+3. Close VS Code completely and restart it.
+
 ## Use Foundry IQ in the GitHub Copilot app
 
-The knowledge base MCP endpoint uses a Search query key, so first copy one from the Azure portal:
+The knowledge base MCP endpoint uses a Search query key. First find the key in the Azure portal:
 
 1. Go back to the Azure portal in the browser.
 2. Search for +++search-+++ in the top search bar, and open the Azure AI Search service in your resource group.
-3. Select **Settings > Keys**, and copy a key under **Manage query keys**.
+3. Select **Security + networking > Keys**, and locate a key under **Manage query keys**. Keep this page open.
 
-Then get the knowledge base's MCP URL by running this in the Visual Studio Code terminal:
-
-+++Get-Content .env | Select-String "FOUNDRY_IQ_MCP_URL"+++
+In Visual Studio Code, open the **.env** file in the lab folder and find **FOUNDRY_IQ_MCP_URL**. Keep the file open. You will switch between the app, Visual Studio Code, and the portal to copy and paste each value when it is needed.
 
 Then add the MCP server:
 
@@ -218,71 +262,96 @@ Then add the MCP server:
 2. Enter these values:
     - **Server name**: +++foundry-iq+++
     - **Server type**: HTTP
-    - **URL**: the **FOUNDRY_IQ_MCP_URL** value, everything after the **=**
-3. Select **Add header**, and enter the name +++api-key+++ and the query key you copied.
-4. Select **Add server**, and check that the server is turned on in the **MCP Servers** list.
+    - **URL**: switch to Visual Studio Code, copy the complete **FOUNDRY_IQ_MCP_URL** value from **.env**, and switch back to the app to paste it. Copy only the URL after the first **=**, without surrounding quotes.
+3. Select **Add header**, and enter the name +++api-key+++. Switch to the Azure portal's **Keys** page, copy a key under **Manage query keys**, and switch back to the app to paste it as the header value.
+4. Select **Add server**, and then switch to the **Installed** tab. Under **MCP Servers**, confirm that the server is toggled on and has a green check mark.
 
 Then select **New** and ask:
 
-+++What benefits are available, and when do I need to enroll?+++
++++What benefits does Contoso offer, and when do I need to enroll?+++
 
 ===
 
 # Exercise: Foundry hosted agents
 
-Each agent in the **src/** folder is a Microsoft Agent Framework app that uses Foundry IQ, Work IQ, or both. The agents are already deployed as Foundry hosted agents. You run one locally first, and then try the hosted version.
+In this exercise, you explore two Microsoft Agent Framework apps that connect to Foundry toolboxes through MCP: one for a Foundry IQ knowledge base, and one for Work IQ Microsoft 365 context. Both are already deployed as Foundry hosted agents. Explore both agents' code, run the Foundry IQ agent locally, and try both hosted versions. Skip the local Work IQ run because of the known consent issue described below.
 
 | Agent | How it reaches its data |
 | --- | --- |
-| **agent-foundryiq-mcp** | Connects to a knowledge base through its Foundry IQ MCP endpoint |
-| **agent-foundryiq-api** | Calls the knowledge base retrieval API from a custom Python tool |
-| **agent-toolbox-foundryiq** | Uses a Foundry toolbox with the knowledge base, web search, and code interpreter |
-| **agent-toolbox-workiq** | Uses a Work IQ toolbox for your Microsoft 365 context |
-| **agent-toolbox-foundryiq-workiq** | Uses a Foundry toolbox over a knowledge base with a Work IQ source |
+| **agent-toolbox-foundryiq** | Uses a Foundry toolbox with a Foundry IQ knowledge base, web search, and code interpreter |
+| **agent-toolbox-workiq** | Uses a Foundry toolbox connected to Work IQ for your Microsoft 365 context |
 
-## Run an agent locally
+## Agent 1: Foundry IQ through a Foundry toolbox
+
+### Explore the code
+
+1. Open **src/agent-toolbox-foundryiq/main.py** in Visual Studio Code.
+2. Find where the agent connects to the Foundry toolbox's MCP endpoint using **FoundryToolbox**. Inspect the instructions that tell the model to use the knowledge base for company questions, web search for current information, and code interpreter for calculations.
+
+### Run locally
 
 1. In the Visual Studio Code terminal, start the agent:
 
-    +++azd ai agent run agent-foundryiq-mcp+++
+    +++azd ai agent run agent-toolbox-foundryiq+++
 
-2. Open the local playground link that the command prints, and ask:
+2. Wait for a local playground to open in the browser. Then ask:
 
-    +++What benefits are available, and when do I need to enroll?+++
+    +++What benefits does Contoso offer, and when do I need to enroll?+++
 
-    You can also open a second terminal and send the question from the command line:
+3. Stop the local agent with **Ctrl+C** in the terminal where you started it.
 
-    +++azd ai agent invoke --local "What benefits are available, and when do I need to enroll?"+++
+### Try the hosted version
 
-3. Open **src/agent-foundryiq-mcp/main.py** to see how the agent connects to the knowledge base.
-4. Stop the agent with **Ctrl+C**.
+1. Get the agent's deployment details:
 
-## Try the hosted agents
+    +++azd ai agent show agent-toolbox-foundryiq+++
 
-1. Call the hosted version of the same agent:
+2. Open the **Playground URL** from the output and sign in with your lab credentials if prompted.
+3. Ask the same question:
 
-    +++azd ai agent invoke agent-foundryiq-mcp "What benefits are available, and when do I need to enroll?"+++
+    +++What benefits does Contoso offer, and when do I need to enroll?+++
 
-2. Open the hosted playground. Get the agent's details:
+4. After the agent responds, select **Traces** beneath its answer. In the **Trajectories** tab, expand the agent run and select the **Execute Tool** entry for knowledge base retrieval. In **Input + Output**, inspect the queries the agent sent and the document content returned.
 
-    +++azd ai agent show agent-foundryiq-mcp+++
+## Agent 2: Work IQ through a Foundry toolbox
 
-    Open the **Playground URL** from the output, sign in with your lab credentials if prompted, and ask the same question.
-3. Try a Work IQ agent in its hosted playground:
+### Explore the code
 
-    +++azd ai agent show agent-toolbox-workiq+++
+1. Open **src/agent-toolbox-workiq/main.py** in Visual Studio Code.
+2. Find where the agent connects to the **work-iq-tools** Foundry toolbox and instructs the model to use Work IQ for questions about your Microsoft 365 context.
 
-    Open the **Playground URL** from the output, and ask:
+### Run locally
+
+> **Known issue:** Work IQ consent fails in the local playground, and a subsequent chat can report that the MCP server failed to initialize. See [issue #18](https://github.com/microsoft/ignite26-PREL42/issues/18).
+
+1. In the Visual Studio Code terminal, start the agent:
+
+    +++azd ai agent run agent-toolbox-workiq+++
+
+2. Wait for a local playground to open in the browser. Then ask:
 
     +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
 
-    The first time, the agent asks you to sign in to the Work IQ connection. Select **Open consent**, sign in with your lab credentials, check **I have verified this request and trust the source**, and select **Allow access**. If the window then shows an "Authentication failed" message, close it.
+3. If the agent asks you to sign in to the Work IQ connection, select **Open consent**, sign in with your lab credentials, check **I have verified this request and trust the source**, and select **Allow access**. If consent fails or the MCP server cannot initialize, continue with the hosted version after stopping the local agent.
+4. Stop the local agent with **Ctrl+C** in the terminal where you started it.
 
-    After you've signed in, start a new chat and ask the question again.
+### Try the hosted version
 
-4. Optional: compare **agent-foundryiq-api** and **agent-toolbox-foundryiq**, locally and hosted.
+> **Known issue:** After Work IQ consent, the popup can show **Authentication failed** with **Code ... not found**, while the playground shows **Sign in successful** followed by **MCP server failed to initialize**. Completing consent and starting a **new chat** has been verified to work for the hosted agent. Follow the steps below. See [issue #17](https://github.com/microsoft/ignite26-PREL42/issues/17).
 
-Select **Next** to review what you built.
+1. Get the agent's deployment details:
+
+    +++azd ai agent show agent-toolbox-workiq+++
+
+2. Open the **Playground URL** from the output and sign in with your lab credentials if prompted. Ask:
+
+    +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
+
+3. If the agent requests Work IQ consent, select **Open consent**, sign in with your lab credentials, check **I have verified this request and trust the source**, and select **Allow access**.
+
+4. After completing consent, close the consent window, even if it shows the **Code ... not found** error described above. In the hosted playground, start a **new chat** and ask the email question again. If the new chat still fails, the workaround has not succeeded; let your instructor know.
+
+5. After the agent answers the email question, select **Traces** beneath its answer. In the **Trajectories** tab, expand the agent run and select the **Execute Tool** entry for the Work IQ call. In **Input + Output**, inspect the request and the returned work context.
 
 ===
 
@@ -295,7 +364,7 @@ You built context-aware AI with Microsoft IQ:
 - A Work IQ knowledge source over your Microsoft 365 email.
 - Foundry IQ knowledge bases with agentic retrieval over indexed documents, called through the retrieval API and MCP.
 - MCP servers for each IQ in the GitHub Copilot app.
-- Microsoft Agent Framework agents that use those knowledge bases, run locally and as Foundry hosted agents.
+- Microsoft Agent Framework agents that connect through MCP to Foundry toolboxes for Foundry IQ and Work IQ, with a local Foundry IQ run and both agents explored as Foundry hosted agents.
 
 ## Continue learning
 
