@@ -170,6 +170,11 @@ In Visual Studio Code, open the **.env** file in the lab folder and find **FABRI
     - **Server type**: HTTP
     - **URL**: switch to Visual Studio Code, copy the complete **FABRIC_DATA_AGENT_MCP_URL** value from **.env**, and switch back to the app to paste it. Copy only the URL after the first **=**, without surrounding quotes.
 4. Complete the Microsoft Entra sign-in for each server when prompted. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use the **Username** and **Temporary Access Pass** from the lab's **Resources** tab, not your Windows or GitHub credentials.
+
+    At the **Enter Temporary Access Pass** screen shown below, enter your lab's Temporary Access Pass and select **Sign in**.
+
+    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](../img/windows-auth-login.png)
+
 5. Return to the GitHub Copilot app and switch to the **Installed** tab. Under **MCP Servers**, confirm that both servers are toggled on and each has a green check mark. If sign-in still fails, let a proctor know.
 
 Then select **New** and ask:
@@ -224,6 +229,11 @@ Work IQ is available as a plugin, so you install it instead of adding the MCP se
 
 5. If the chat says that the **workiq** extension needs you to sign in, select **Sign in**. Installing the plugin alone may not open a sign-in prompt.
 6. Complete the Microsoft Entra sign-in. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use the **Username** and **Temporary Access Pass** from the lab's **Resources** tab, not your Windows or GitHub credentials.
+
+    At the **Enter Temporary Access Pass** screen shown below, enter your lab's Temporary Access Pass and select **Sign in**.
+
+    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](../img/windows-auth-login.png)
+
 7. Return to the chat. If the original request has not continued, send the prompt again. Confirm that Work IQ returns a summary of the sample emails. If sign-in still fails or the chat reports that the MCP server is not configured, let a proctor know.
 
 ===
