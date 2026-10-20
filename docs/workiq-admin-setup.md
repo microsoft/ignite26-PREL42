@@ -54,7 +54,12 @@ One Work IQ Entra app (created by `infra/create-workiq-entra.py`, `WORK_IQ_SEARC
 |---|---|
 | `foundryiq-workiq.ipynb` | Azure AI Search calls Work IQ as the app through a federated credential (billed with Copilot credits) |
 | Direct `workiq-*` notebooks | Interactive sign-in for `api://workiq.svc.cloud.microsoft/WorkIQAgent.Ask` |
-| `agent-toolbox-workiq`, `agent-workiq-maf` | The app's client secret backs the Foundry `RemoteA2A` OAuth2 connection |
+| `agent-toolbox-workiq` | The app's client secret backs the Foundry `RemoteA2A` OAuth2 connection |
+| `agent-workiq-maf` (local only) | Interactive delegated sign-in and direct Work IQ MCP, like the notebooks; no Toolbox or client secret |
+
+To compare direct MCP with the Toolbox path, run the
+[local Agent Framework experiment](../src/README.md#try-work-iq-without-toolbox).
+This reuses the notebook app without changing the hosted Toolbox agent or its connection.
 
 ## Troubleshooting
 
