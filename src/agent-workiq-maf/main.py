@@ -1,126 +1,117 @@
-"""Run a local, single-user Agent Framework assistant with direct Work IQ MCP."""
+"""Workmate: direct Work IQ MCP, locally and as a Foundry Hosted Agent."""
 
-import argparse
 import asyncio
 import logging
 import os
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, AsyncIterable
+from contextvars import ContextVar
 from pathlib import Path
+from typing import Any
 
 import httpx
-from agent_framework import Agent, MCPStreamableHTTPTool
+from agent_framework import Agent, MCPStreamableHTTPTool, tool
 from agent_framework.foundry import FoundryChatClient
-from azure.identity import AzureDeveloperCliCredential
+from agent_framework_foundry_hosting import ResponsesHostServer
+from azure.ai.agentserver.responses import ResponseContext
+from azure.ai.agentserver.responses.models import CreateResponse, ResponseStreamEvent
+from azure.identity import AzureDeveloperCliCredential, ManagedIdentityCredential
 from dotenv import load_dotenv
-from msal import PublicClientApplication
 
-load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=True)
-
-logger = logging.getLogger("workmate-agent")
-WORK_IQ_SCOPE = "api://workiq.svc.cloud.microsoft/WorkIQAgent.Ask"
 WORK_IQ_MCP_URL = "https://workiq.svc.cloud.microsoft/mcp"
+WORK_IQ_TOKEN_HEADER = "x-client-workiq-access-token"
+_work_iq_token: ContextVar[str | None] = ContextVar("work_iq_token", default=None)
 
 
-class WorkIQUserAuth(httpx.Auth):
-    """Refresh the signed-in user's delegated token from MSAL's in-memory cache."""
+async def ask_work_iq(question: str) -> str:
+    """Ask Work IQ about the signed-in user's Microsoft 365 workplace context."""
+    token = _work_iq_token.get()
+    if not token:
+        raise PermissionError("A delegated Work IQ token is required for this request.")
 
-    def __init__(self, app: PublicClientApplication) -> None:
-        self.app = app
-        accounts = app.get_accounts()
-        if len(accounts) != 1:
-            raise RuntimeError("Expected one signed-in Work IQ account. Restart and sign in again.")
-        self.account = accounts[0]
+    # A fresh MCP session per call avoids reusing another request's credentials.
+    async with httpx.AsyncClient(
+        headers={"Authorization": f"Bearer {token}"},
+        timeout=httpx.Timeout(30, read=180),
+        follow_redirects=False,
+    ) as http_client:
+        async with MCPStreamableHTTPTool(
+            name="work_iq",
+            url=WORK_IQ_MCP_URL,
+            http_client=http_client,
+            request_timeout=180,
+            allowed_tools=["ask"],
+            load_prompts=False,
+        ) as work_iq:
+            result = await work_iq.call_tool("ask", question=question)
+            return result if isinstance(result, str) else "\n".join(content.text or "" for content in result)
 
-    async def async_auth_flow(self, request: httpx.Request) -> AsyncGenerator[httpx.Request, httpx.Response]:
-        result = await asyncio.to_thread(
-            self.app.acquire_token_silent,
-            [WORK_IQ_SCOPE],
-            account=self.account,
-        )
-        if not result or not result.get("access_token"):
-            raise RuntimeError("Work IQ sign-in expired or requires interaction. Restart and sign in again.")
-        request.headers["Authorization"] = f"Bearer {result['access_token']}"
-        yield request
+
+class WorkIQResponsesHost(ResponsesHostServer):
+    """Bind a forwarded Work IQ token only while its Responses request runs."""
+
+    async def _handle_response(
+        self,
+        request: CreateResponse,
+        context: ResponseContext,
+        cancellation_signal: asyncio.Event,
+    ) -> AsyncIterable[ResponseStreamEvent | dict[str, Any]]:
+        if request.background:
+            raise ValueError("Work IQ requires a foreground request with a current delegated token.")
+        token = context.client_headers.get(WORK_IQ_TOKEN_HEADER)
+        if not token:
+            raise PermissionError(f"Supply a delegated Work IQ token in {WORK_IQ_TOKEN_HEADER}.")
+        events = await super()._handle_response(request, context, cancellation_signal)
+        return self._with_work_iq_token(events, token)
+
+    @staticmethod
+    async def _with_work_iq_token(
+        events: AsyncIterable[ResponseStreamEvent | dict[str, Any]],
+        token: str,
+    ) -> AsyncGenerator[ResponseStreamEvent | dict[str, Any], None]:
+        reset = _work_iq_token.set(token)
+        try:
+            async for event in events:
+                yield event
+        finally:
+            _work_iq_token.reset(reset)
 
 
-async def main(question: str) -> None:
-    """Sign in like the notebooks, then answer one question without Toolbox or OBO."""
-    if "FOUNDRY_HOSTING_ENVIRONMENT" in os.environ:
-        raise RuntimeError(
-            "This direct Work IQ experiment is local-only and signs in one user interactively. "
-            "It does not implement per-caller authentication for a Foundry Hosted Agent."
-        )
-
-    required = (
-        "FOUNDRY_PROJECT_ENDPOINT",
-        "AZURE_AI_MODEL_DEPLOYMENT_NAME",
-        "WORK_IQ_SEARCH_ENTRA_APP_ID",
-        "WORK_IQ_SEARCH_ENTRA_TENANT_ID",
-    )
-    missing = [name for name in required if not os.getenv(name)]
+def main() -> None:
+    """Run the same Responses server locally or in Microsoft Foundry."""
+    hosted = "FOUNDRY_HOSTING_ENVIRONMENT" in os.environ
+    if not hosted:
+        load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=True)
+    missing = [name for name in ("FOUNDRY_PROJECT_ENDPOINT", "AZURE_AI_MODEL_DEPLOYMENT_NAME") if not os.getenv(name)]
     if missing:
-        raise RuntimeError(f"Set these values in the repository .env: {', '.join(missing)}")
+        raise RuntimeError(f"Configure these model settings: {', '.join(missing)}")
 
-    app = PublicClientApplication(
-        client_id=os.environ["WORK_IQ_SEARCH_ENTRA_APP_ID"],
-        authority=(f"https://login.microsoftonline.com/{os.environ['WORK_IQ_SEARCH_ENTRA_TENANT_ID']}"),
+    credential = (
+        ManagedIdentityCredential()
+        if hosted
+        else AzureDeveloperCliCredential(tenant_id=os.getenv("AZURE_TENANT_ID"), process_timeout=60)
     )
-    if os.getenv("CODESPACES") == "true":
-        flow = app.initiate_device_flow(scopes=[WORK_IQ_SCOPE])
-        if "user_code" not in flow:
-            raise RuntimeError(f"Work IQ device sign-in failed: {flow.get('error_description', 'No user code')}")
-        print(flow["message"], flush=True)
-        result = app.acquire_token_by_device_flow(flow)
-    else:
-        result = app.acquire_token_interactive([WORK_IQ_SCOPE])
-    if not result or not result.get("access_token"):
-        description = result.get("error_description", "No access token returned") if result else "Sign-in cancelled"
-        raise RuntimeError(f"Work IQ authentication failed: {description}")
-
-    logger.info("Signed in to Work IQ; connecting directly to %s", WORK_IQ_MCP_URL)
-    with AzureDeveloperCliCredential(
-        tenant_id=os.getenv("AZURE_TENANT_ID") or os.environ["WORK_IQ_SEARCH_ENTRA_TENANT_ID"],
-        process_timeout=60,
-    ) as credential:
-        async with httpx.AsyncClient(
-            auth=WorkIQUserAuth(app),
-            timeout=httpx.Timeout(30, read=180),
-        ) as http_client:
-            async with MCPStreamableHTTPTool(
-                name="work_iq",
-                url=WORK_IQ_MCP_URL,
-                http_client=http_client,
-                request_timeout=180,
-                allowed_tools=["ask"],
-                load_prompts=False,
-            ) as work_iq:
-                client = FoundryChatClient(
-                    project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
-                    model=os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"],
-                    credential=credential,
-                )
-                agent = Agent(
-                    client=client,
-                    name="Workmate",
-                    instructions="""You are Workmate, an assistant grounded in the signed-in user's
-                    Microsoft 365 workplace context. Use the Work IQ ask tool for every question.
-                    Respect the permissions and sensitivity boundaries returned by Work IQ.
-                    Preserve source citations, mention relevant dates and participants, and
-                    distinguish sourced facts from inference. Say clearly when Work IQ does not
-                    provide enough information. Never claim access to content that the signed-in
-                    user cannot access. This experiment is read-only; do not perform write actions.""",
-                    tools=[work_iq],
-                    default_options={"store": False},
-                )
-                response = await agent.run(question)
-                print(response.text)
+    with credential:
+        client = FoundryChatClient(
+            project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
+            model=os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"],
+            credential=credential,
+        )
+        agent = Agent(
+            client=client,
+            name="Workmate",
+            instructions="""You are Workmate, an assistant grounded in the signed-in user's
+            Microsoft 365 workplace context. Use ask_work_iq for every workplace question.
+            Respect the permissions and sensitivity boundaries returned by Work IQ.
+            Preserve source citations, mention relevant dates and participants, and distinguish
+            sourced facts from inference. Say clearly when Work IQ fails or does not provide
+            enough information. Never claim access to content the signed-in user cannot access.
+            This experiment is read-only; do not perform write actions.""",
+            tools=[tool(ask_work_iq)],
+            default_options={"store": False},
+        )
+        WorkIQResponsesHost(agent).run(host="0.0.0.0" if hosted else "127.0.0.1")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Ask Work IQ through a local Microsoft Agent Framework agent, without Toolbox."
-    )
-    parser.add_argument("question", help="A read-only question about your Microsoft 365 work context.")
-    args = parser.parse_args()
     logging.basicConfig(level=logging.INFO)
-    asyncio.run(main(args.question))
+    main()

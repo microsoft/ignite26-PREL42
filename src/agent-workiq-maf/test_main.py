@@ -1,15 +1,17 @@
-"""Offline checks for the direct Work IQ experiment."""
+"""Offline checks for the local-to-hosted Work IQ path."""
 
-import io
+import asyncio
 import json
 import os
 import unittest
-from contextlib import redirect_stdout
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import httpx
+from agent_framework import ChatResponse, Message
+from agent_framework.exceptions import ToolExecutionException
 
+import invoke as test_client
 import main as workmate
 
 SETTINGS = {
@@ -18,154 +20,110 @@ SETTINGS = {
     "WORK_IQ_SEARCH_ENTRA_APP_ID": "test-app",
     "WORK_IQ_SEARCH_ENTRA_TENANT_ID": "test-tenant",
 }
+COMPLETED = {
+    "status": "completed",
+    "output": [{"type": "message", "content": [{"type": "output_text", "text": "Test answer [1]"}]}],
+}
 
 
-class UserAuthTests(unittest.IsolatedAsyncioTestCase):
-    async def test_refreshes_delegated_token_on_each_request(self):
-        app = MagicMock()
-        account = {"home_account_id": "test-user"}
-        app.get_accounts.return_value = [account]
-        app.acquire_token_silent.side_effect = [
-            {"access_token": "test-first-token"},
-            {"access_token": "test-refreshed-token"},
-        ]
-        authorizations = []
+class HostAuthTests(unittest.IsolatedAsyncioTestCase):
+    async def test_concurrent_requests_do_not_share_tokens(self):
+        async def run_for_user(token):
+            async def events():
+                await asyncio.sleep(0)
+                self.assertEqual(workmate._work_iq_token.get(), token)
+                yield {"type": "test"}
+                await asyncio.sleep(0)
+                self.assertEqual(workmate._work_iq_token.get(), token)
 
-        def handle(request):
-            authorizations.append(request.headers["Authorization"])
-            return httpx.Response(200)
+            async for _ in workmate.WorkIQResponsesHost._with_work_iq_token(events(), token):
+                self.assertEqual(workmate._work_iq_token.get(), token)
+            self.assertIsNone(workmate._work_iq_token.get())
 
-        async with httpx.AsyncClient(
-            auth=workmate.WorkIQUserAuth(app),
-            transport=httpx.MockTransport(handle),
-        ) as client:
-            await client.post(workmate.WORK_IQ_MCP_URL)
-            await client.post(workmate.WORK_IQ_MCP_URL)
+        await asyncio.gather(run_for_user("test-user-a"), run_for_user("test-user-b"))
+        self.assertIsNone(workmate._work_iq_token.get())
 
-        self.assertEqual(authorizations, ["Bearer test-first-token", "Bearer test-refreshed-token"])
-        self.assertEqual(app.acquire_token_silent.call_count, 2)
-        app.acquire_token_silent.assert_called_with([workmate.WORK_IQ_SCOPE], account=account)
+    async def test_token_is_cleared_after_failure(self):
+        async def events():
+            self.assertEqual(workmate._work_iq_token.get(), "test-user-a")
+            raise RuntimeError("Test failure")
+            yield  # pragma: no cover
 
-    async def test_missing_token_fails_before_sending(self):
-        for result in (None, {"error": "interaction_required"}, {"access_token": ""}):
-            with self.subTest(result=result):
-                app = MagicMock()
-                app.get_accounts.return_value = [{"home_account_id": "test-user"}]
-                app.acquire_token_silent.return_value = result
-                handle = MagicMock(return_value=httpx.Response(200))
-                async with httpx.AsyncClient(
-                    auth=workmate.WorkIQUserAuth(app),
-                    transport=httpx.MockTransport(handle),
-                ) as client:
-                    with self.assertRaisesRegex(RuntimeError, "Restart and sign in again"):
-                        await client.post(workmate.WORK_IQ_MCP_URL)
-                handle.assert_not_called()
+        with self.assertRaisesRegex(RuntimeError, "Test failure"):
+            async for _ in workmate.WorkIQResponsesHost._with_work_iq_token(events(), "test-user-a"):
+                pass
+        self.assertIsNone(workmate._work_iq_token.get())
 
-    def test_requires_exactly_one_account(self):
-        for accounts in ([], [{}, {}]):
-            with self.subTest(accounts=accounts):
-                app = MagicMock()
-                app.get_accounts.return_value = accounts
-                with self.assertRaisesRegex(RuntimeError, "Expected one signed-in"):
-                    workmate.WorkIQUserAuth(app)
+    async def test_token_is_cleared_when_stream_is_closed_early(self):
+        async def events():
+            yield {"type": "test"}
+            yield {"type": "test"}
 
+        stream = workmate.WorkIQResponsesHost._with_work_iq_token(events(), "test-user-a")
+        await anext(stream)
+        self.assertEqual(workmate._work_iq_token.get(), "test-user-a")
+        await stream.aclose()
+        self.assertIsNone(workmate._work_iq_token.get())
 
-class DirectAgentTests(unittest.IsolatedAsyncioTestCase):
-    def setUp(self):
-        self.environment = patch.dict(os.environ, SETTINGS, clear=True)
-        self.environment.start()
-        self.addCleanup(self.environment.stop)
-        self.app_factory = self.enterContext(patch.object(workmate, "PublicClientApplication"))
-        self.app = self.app_factory.return_value
-        self.app.get_accounts.return_value = [{"home_account_id": "test-user"}]
-        self.app.acquire_token_interactive.return_value = {"access_token": "test-user-token"}
-        self.credential = self.enterContext(patch.object(workmate, "AzureDeveloperCliCredential"))
-        self.mcp = self.enterContext(patch.object(workmate, "MCPStreamableHTTPTool"))
-        self.client = self.enterContext(patch.object(workmate, "FoundryChatClient"))
-        self.agent = self.enterContext(patch.object(workmate, "Agent"))
-        self.agent.return_value.run = AsyncMock(return_value=SimpleNamespace(text="Test answer [1]"))
-        self.output = self.enterContext(redirect_stdout(io.StringIO()))
+    async def test_missing_token_fails_before_mcp(self):
+        with patch.object(workmate, "MCPStreamableHTTPTool") as mcp:
+            with self.assertRaisesRegex(PermissionError, "delegated Work IQ token"):
+                await workmate.ask_work_iq("Summarize my emails.")
+            mcp.assert_not_called()
 
-    async def test_browser_sign_in_and_direct_mcp_wiring(self):
-        await workmate.main("Summarize my recent emails.")
+    async def test_host_rejects_background_and_missing_header(self):
+        host = object.__new__(workmate.WorkIQResponsesHost)
+        context = SimpleNamespace(client_headers={})
+        with self.assertRaisesRegex(PermissionError, workmate.WORK_IQ_TOKEN_HEADER):
+            await host._handle_response(SimpleNamespace(background=False), context, asyncio.Event())
+        with self.assertRaisesRegex(ValueError, "foreground"):
+            await host._handle_response(SimpleNamespace(background=True), context, asyncio.Event())
 
-        self.app_factory.assert_called_once_with(
-            client_id="test-app",
-            authority="https://login.microsoftonline.com/test-tenant",
-        )
-        self.app.acquire_token_interactive.assert_called_once_with([workmate.WORK_IQ_SCOPE])
-        self.app.acquire_token_by_device_flow.assert_not_called()
-        self.credential.assert_called_once_with(tenant_id="test-tenant", process_timeout=60)
-        self.assertEqual(self.mcp.call_args.kwargs["url"], workmate.WORK_IQ_MCP_URL)
-        self.assertEqual(self.mcp.call_args.kwargs["allowed_tools"], ["ask"])
-        self.assertEqual(self.mcp.call_args.kwargs["request_timeout"], 180)
-        self.assertFalse(self.mcp.call_args.kwargs["load_prompts"])
-        http_client = self.mcp.call_args.kwargs["http_client"]
-        self.assertIsInstance(http_client.auth, workmate.WorkIQUserAuth)
-        self.assertTrue(http_client.is_closed)
-        self.assertEqual(self.agent.call_args.kwargs["tools"], [self.mcp.return_value.__aenter__.return_value])
-        self.assertEqual(self.agent.call_args.kwargs["default_options"], {"store": False})
-        self.agent.return_value.run.assert_awaited_once_with("Summarize my recent emails.")
-        self.assertEqual(self.output.getvalue().strip(), "Test answer [1]")
+    async def test_native_responses_http_request_binds_and_clears_token(self):
+        seen_tokens = []
 
-    async def test_codespaces_device_sign_in(self):
-        os.environ["CODESPACES"] = "true"
-        flow = {"user_code": "TEST-CODE", "message": "Use TEST-CODE to sign in."}
-        self.app.initiate_device_flow.return_value = flow
-        self.app.acquire_token_by_device_flow.return_value = {"access_token": "test-user-token"}
+        class RecordingAgent:
+            context_providers = []
 
-        await workmate.main("Summarize my recent emails.")
+            async def run(self, **kwargs):
+                token = workmate._work_iq_token.get()
+                seen_tokens.append(token)
+                if token and token in str(kwargs):
+                    raise AssertionError("A delegated token reached model inputs.")
+                return ChatResponse(messages=Message("assistant", ["Test answer [1]"]))
 
-        self.app.initiate_device_flow.assert_called_once_with(scopes=[workmate.WORK_IQ_SCOPE])
-        self.app.acquire_token_by_device_flow.assert_called_once_with(flow)
-        self.app.acquire_token_interactive.assert_not_called()
-        self.assertIn(flow["message"], self.output.getvalue())
-
-    async def test_device_flow_failure_is_explicit(self):
-        os.environ["CODESPACES"] = "true"
-        self.app.initiate_device_flow.return_value = {"error_description": "Device sign-in disabled"}
-        with self.assertRaisesRegex(RuntimeError, "Device sign-in disabled"):
-            await workmate.main("Summarize my emails.")
-        self.mcp.assert_not_called()
-
-    async def test_browser_sign_in_failure_is_explicit(self):
-        for result in (None, {"error_description": "Consent required"}, {"access_token": ""}):
-            with self.subTest(result=result):
-                self.app.acquire_token_interactive.return_value = result
-                with self.assertRaisesRegex(RuntimeError, "Work IQ authentication failed"):
-                    await workmate.main("Summarize my emails.")
-        self.mcp.assert_not_called()
-        self.agent.assert_not_called()
-
-    async def test_missing_configuration_fails_before_sign_in(self):
-        del os.environ["WORK_IQ_SEARCH_ENTRA_APP_ID"]
-        with self.assertRaisesRegex(RuntimeError, "WORK_IQ_SEARCH_ENTRA_APP_ID"):
-            await workmate.main("Summarize my emails.")
-        self.app_factory.assert_not_called()
-
-    async def test_refuses_hosted_execution_before_sign_in(self):
-        os.environ["FOUNDRY_HOSTING_ENVIRONMENT"] = "test"
-        with self.assertRaisesRegex(RuntimeError, "local-only"):
-            await workmate.main("Summarize my emails.")
-        self.app_factory.assert_not_called()
-        self.mcp.assert_not_called()
-
-    async def test_connection_failures_are_not_hidden(self):
-        self.mcp.return_value.__aenter__.side_effect = RuntimeError("Work IQ connection failed")
-        with self.assertRaisesRegex(RuntimeError, "Work IQ connection failed"):
-            await workmate.main("Summarize my emails.")
-        self.agent.assert_not_called()
+        with patch.dict(os.environ, {"OTEL_SDK_DISABLED": "true"}, clear=True):
+            host = workmate.WorkIQResponsesHost(RecordingAgent())
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=host),
+                base_url="http://localhost",
+            ) as client:
+                for token in ("test-user-a", "test-user-b"):
+                    response = await client.post(
+                        "/responses",
+                        headers={workmate.WORK_IQ_TOKEN_HEADER: token},
+                        json={"input": "Summarize my emails.", "stream": False, "store": False},
+                    )
+                    self.assertEqual(response.status_code, 200, response.text)
+                    self.assertEqual(response.json()["status"], "completed", response.text)
+                    self.assertNotIn(token, response.text)
+                response = await client.post(
+                    "/responses",
+                    json={"input": "Summarize my emails.", "stream": False, "store": False},
+                )
+                self.assertTrue(response.status_code >= 400 or response.json().get("status") == "failed", response.text)
+            await host._cleanup_agent()
+        self.assertEqual(seen_tokens, ["test-user-a", "test-user-b"])
+        self.assertIsNone(workmate._work_iq_token.get())
 
 
 class MCPIntegrationTests(unittest.IsolatedAsyncioTestCase):
-    async def test_native_mcp_handshake_discovery_and_ask_with_delegated_auth(self):
-        app = MagicMock()
-        app.get_accounts.return_value = [{"home_account_id": "test-user"}]
-        app.acquire_token_silent.return_value = {"access_token": "test-user-token"}
+    async def call_with_mock_transport(self, *, error=False):
+        authorizations = []
         calls = []
 
         def handle(request):
-            self.assertEqual(request.headers["Authorization"], "Bearer test-user-token")
+            authorizations.append(request.headers["Authorization"])
             payload = json.loads(request.content)
             calls.append(payload)
             method = payload["method"]
@@ -197,30 +155,160 @@ class MCPIntegrationTests(unittest.IsolatedAsyncioTestCase):
             elif method == "tools/call":
                 self.assertEqual(payload["params"]["name"], "ask")
                 self.assertEqual(payload["params"]["arguments"], {"question": "Summarize my emails."})
-                result = {"content": [{"type": "text", "text": "Offline answer [1]"}], "isError": False}
+                result = {
+                    "content": [{"type": "text", "text": "Work IQ denied access" if error else "Offline answer [1]"}],
+                    "isError": error,
+                }
             else:
                 self.fail(f"Unexpected MCP method: {method}")
             return httpx.Response(200, json={"jsonrpc": "2.0", "id": payload["id"], "result": result})
 
-        async with httpx.AsyncClient(
-            auth=workmate.WorkIQUserAuth(app),
-            transport=httpx.MockTransport(handle),
-        ) as http_client:
-            async with workmate.MCPStreamableHTTPTool(
-                name="work_iq",
-                url=workmate.WORK_IQ_MCP_URL,
-                http_client=http_client,
-                request_timeout=180,
-                allowed_tools=["ask"],
-                load_prompts=False,
-            ) as work_iq:
-                self.assertEqual([function.name for function in work_iq.functions], ["ask"])
-                result = await work_iq.call_tool("ask", question="Summarize my emails.")
-                text = result if isinstance(result, str) else "\n".join(content.text or "" for content in result)
-                self.assertIn("Offline answer [1]", text)
+        real_client = httpx.AsyncClient
 
-        self.assertIn("tools/call", [call["method"] for call in calls])
-        self.assertGreaterEqual(app.acquire_token_silent.call_count, 4)
+        def create_client(**kwargs):
+            self.assertFalse(kwargs["follow_redirects"])
+            return real_client(transport=httpx.MockTransport(handle), **kwargs)
+
+        with patch.object(workmate.httpx, "AsyncClient", side_effect=create_client):
+            for token in ("test-user-a", "test-user-b"):
+                reset = workmate._work_iq_token.set(token)
+                try:
+                    if error:
+                        with self.assertRaisesRegex(ToolExecutionException, "Work IQ denied access"):
+                            await workmate.ask_work_iq("Summarize my emails.")
+                    else:
+                        self.assertEqual(await workmate.ask_work_iq("Summarize my emails."), "Offline answer [1]")
+                finally:
+                    workmate._work_iq_token.reset(reset)
+        self.assertEqual([call["method"] for call in calls].count("initialize"), 2)
+        self.assertEqual([call["method"] for call in calls].count("tools/call"), 2)
+        self.assertIn("Bearer test-user-a", authorizations)
+        self.assertIn("Bearer test-user-b", authorizations)
+
+    async def test_native_mcp_sessions_are_separate_per_user(self):
+        await self.call_with_mock_transport()
+
+    async def test_work_iq_errors_are_not_successful_results(self):
+        await self.call_with_mock_transport(error=True)
+
+
+class StartupTests(unittest.TestCase):
+    def test_local_and_hosted_use_the_same_server(self):
+        for hosted in (False, True):
+            with self.subTest(hosted=hosted):
+                settings = {
+                    name: SETTINGS[name] for name in ("FOUNDRY_PROJECT_ENDPOINT", "AZURE_AI_MODEL_DEPLOYMENT_NAME")
+                }
+                if hosted:
+                    settings["FOUNDRY_HOSTING_ENVIRONMENT"] = "test"
+                with (
+                    patch.dict(os.environ, settings, clear=True),
+                    patch.object(workmate, "load_dotenv") as dotenv,
+                    patch.object(workmate, "AzureDeveloperCliCredential") as local_credential,
+                    patch.object(workmate, "ManagedIdentityCredential") as hosted_credential,
+                    patch.object(workmate, "FoundryChatClient") as model,
+                    patch.object(workmate, "Agent") as agent,
+                    patch.object(workmate, "WorkIQResponsesHost") as host,
+                ):
+                    workmate.main()
+                    selected = hosted_credential if hosted else local_credential
+                    other = local_credential if hosted else hosted_credential
+                    selected.assert_called_once()
+                    other.assert_not_called()
+                    self.assertEqual(model.call_args.kwargs["credential"], selected.return_value)
+                    self.assertEqual(agent.call_args.kwargs["tools"][0].name, "ask_work_iq")
+                    host.assert_called_once_with(agent.return_value)
+                    host.return_value.run.assert_called_once_with(host="0.0.0.0" if hosted else "127.0.0.1")
+                    self.assertEqual(dotenv.call_count, 0 if hosted else 1)
+
+
+class InvokeTests(unittest.TestCase):
+    def setUp(self):
+        self.enterContext(patch.dict(os.environ, SETTINGS, clear=True))
+        self.app_factory = self.enterContext(patch.object(test_client, "PublicClientApplication"))
+        self.app = self.app_factory.return_value
+        self.auth_result = {"access_token": "test-user-token", "id_token_claims": {"oid": "test-user-oid"}}
+        self.app.acquire_token_interactive.return_value = self.auth_result
+        self.http_factory = self.enterContext(patch.object(test_client.httpx, "Client"))
+        self.post = self.http_factory.return_value.__enter__.return_value.post
+        self.post.return_value.json.return_value = COMPLETED
+        self.credential = self.enterContext(patch.object(test_client, "AzureDeveloperCliCredential"))
+        self.credential.return_value.__enter__.return_value.get_token.return_value.token = "test-foundry-token"
+
+    def test_local_client_forwards_only_work_iq_token_outside_body(self):
+        self.assertEqual(test_client.invoke("Summarize my emails.", remote=False), "Test answer [1]")
+        self.app.acquire_token_interactive.assert_called_once_with([test_client.WORK_IQ_SCOPE])
+        self.assertEqual(self.post.call_args.args[0], test_client.LOCAL_RESPONSES_URL)
+        self.assertEqual(self.post.call_args.kwargs["headers"], {test_client.WORK_IQ_TOKEN_HEADER: "test-user-token"})
+        self.assertNotIn("test-user-token", json.dumps(self.post.call_args.kwargs["json"]))
+        self.credential.assert_not_called()
+
+    def test_remote_client_separates_foundry_auth_from_work_iq_and_user_identity(self):
+        self.assertEqual(test_client.invoke("Summarize my emails.", remote=True), "Test answer [1]")
+        headers = self.post.call_args.kwargs["headers"]
+        self.assertEqual(headers[test_client.WORK_IQ_TOKEN_HEADER], "test-user-token")
+        self.assertEqual(headers["Authorization"], "Bearer test-foundry-token")
+        self.assertEqual(headers["x-ms-user-identity"], "test-user-oid")
+        self.assertEqual(
+            self.post.call_args.args[0],
+            f"{SETTINGS['FOUNDRY_PROJECT_ENDPOINT']}/agents/agent-workiq-maf"
+            "/endpoint/protocols/openai/responses?api-version=v1",
+        )
+        self.assertEqual(self.post.call_args.kwargs["json"]["store"], False)
+        self.assertEqual(self.post.call_args.kwargs["json"]["background"], False)
+
+    def test_remote_requires_authenticated_user_identity(self):
+        self.app.acquire_token_interactive.return_value = {"access_token": "test-user-token"}
+        with self.assertRaisesRegex(RuntimeError, "user object ID"):
+            test_client.invoke("Summarize my emails.", remote=True)
+        self.post.assert_not_called()
+
+    def test_device_code_sign_in_uses_the_notebook_scope(self):
+        os.environ["CODESPACES"] = "true"
+        flow = {"user_code": "TEST", "message": "Test device sign-in"}
+        self.app.initiate_device_flow.return_value = flow
+        self.app.acquire_token_by_device_flow.return_value = self.auth_result
+        with patch("builtins.print"):
+            self.assertEqual(test_client.sign_in(), self.auth_result)
+        self.app.initiate_device_flow.assert_called_once_with(scopes=[test_client.WORK_IQ_SCOPE])
+        self.app.acquire_token_by_device_flow.assert_called_once_with(flow)
+        self.app.acquire_token_interactive.assert_not_called()
+
+    def test_authentication_failures_do_not_send_requests(self):
+        for result in (None, {"error_description": "Consent required"}, {"access_token": ""}):
+            with self.subTest(result=result):
+                self.app.acquire_token_interactive.return_value = result
+                with self.assertRaisesRegex(RuntimeError, "authentication failed"):
+                    test_client.invoke("Summarize my emails.", remote=False)
+        self.post.assert_not_called()
+
+    def test_remote_target_must_be_foundry_https_before_sign_in(self):
+        for endpoint in ("http://example.services.ai.azure.com", "https://example.invalid/api/projects/lab"):
+            with self.subTest(endpoint=endpoint):
+                os.environ["FOUNDRY_PROJECT_ENDPOINT"] = endpoint
+                with self.assertRaisesRegex(ValueError, "HTTPS Microsoft Foundry"):
+                    test_client.invoke("Summarize my emails.", remote=True)
+        self.app.acquire_token_interactive.assert_not_called()
+
+    def test_failed_responses_are_not_printed_as_answers(self):
+        self.post.return_value.json.return_value = {"status": "failed", "error": {"message": "Work IQ rejected token"}}
+        with self.assertRaisesRegex(RuntimeError, "did not complete"):
+            test_client.invoke("Summarize my emails.", remote=False)
+
+    def test_remote_http_authentication_error_is_not_retried(self):
+        request = httpx.Request("POST", "https://example.services.ai.azure.com")
+        response = httpx.Response(403, request=request)
+        self.post.return_value.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Caller permission denied", request=request, response=response
+        )
+        with self.assertRaisesRegex(httpx.HTTPStatusError, "Caller permission denied"):
+            test_client.invoke("Summarize my emails.", remote=True)
+        self.assertEqual(self.post.call_count, 1)
+
+    def test_completed_response_requires_an_answer(self):
+        self.post.return_value.json.return_value = {"status": "completed", "output": []}
+        with self.assertRaisesRegex(RuntimeError, "without a text answer"):
+            test_client.invoke("Summarize my emails.", remote=False)
 
 
 if __name__ == "__main__":
