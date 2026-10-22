@@ -8,11 +8,10 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import httpx
-from agent_framework import ChatResponse, Message
-from agent_framework.exceptions import ToolExecutionException
-
 import invoke as test_client
 import main as workmate
+from agent_framework import ChatResponse, Message
+from agent_framework.exceptions import ToolExecutionException
 
 SETTINGS = {
     "FOUNDRY_PROJECT_ENDPOINT": "https://example.services.ai.azure.com/api/projects/lab",
