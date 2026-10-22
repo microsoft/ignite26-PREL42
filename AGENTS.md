@@ -20,6 +20,7 @@ Copied on 2026-10-14. Compare against these revisions when syncing:
 
 ## Rules
 
+- For Microsoft Foundry agent work, read the `microsoft-foundry` skill first.
 - Infrastructure dependencies go in the root `pyproject.toml`/`uv.lock`; each agent under `src/` has its own.
 - Create credentials in `infra/` scripts with `infra/setup_credential.py`, not `AzureDeveloperCliCredential`.
 - When changing `infra/hooks/postprovision.*`, mirror the change in `infra/setup-lab.ps1`.
