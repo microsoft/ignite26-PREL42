@@ -418,6 +418,7 @@ You built context-aware AI with Microsoft IQ:
 
 ## Continue learning
 
+- [Web IQ portal](https://webiq.microsoft.ai/profiles)
 - [What is Foundry IQ?](https://learn.microsoft.com/azure/ai-foundry/agents/concepts/what-is-foundry-iq)
 - [What is Fabric IQ?](https://learn.microsoft.com/fabric/iq/overview)
 - [Work IQ MCP tool reference](https://learn.microsoft.com/microsoft-365/copilot/extensibility/work-iq/mcp/tool-reference)
