@@ -100,11 +100,11 @@ Then save the key so the notebooks can use it:
 2. Select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
 3. Run each cell. You call the Web IQ MCP endpoint directly to search the web, images, and videos.
 
-**⚠️ Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
-
-1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
-2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
-3. Close VS Code completely and restart it.
+> [!Alert] **Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
+>
+> 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
+> 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
+> 3. Close VS Code completely and restart it.
 
 ## Use Web IQ in the GitHub Copilot app
 
@@ -146,15 +146,15 @@ When you open each notebook, select **Select Kernel**, and choose the **ignite26
 2. Open **notebooks/fabriciq-graph.ipynb** and run each cell. You query the product review graph with GQL over the Fabric REST API.
 3. Open **notebooks/fabriciq-dataagent-mcp.ipynb** and run each cell. You call the Fabric data agent's MCP endpoint for analytical questions.
 
-**⚠️ Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
-
-1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
-2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
-3. Close VS Code completely and restart it.
+> [!Alert] **Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
+>
+> 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
+> 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
+> 3. Close VS Code completely and restart it.
 
 ## Use Fabric IQ in the GitHub Copilot app
 
-**⚠️ Sign-in window:** The Microsoft Entra sign-in window can open behind the GitHub Copilot app and other windows. If no prompt is visible, minimize the app, browser, and any other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
+> [!Alert] **Sign-in window:** The Microsoft Entra sign-in window can open behind the GitHub Copilot app and other windows. If no prompt is visible, minimize the app, browser, and any other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
 
 Add two MCP servers, one for the ontology and one for the data agent. Both sign you in with your Microsoft Entra account, so they don't need headers.
 
@@ -176,7 +176,9 @@ In Visual Studio Code, open the **.env** file in the lab folder and find **FABRI
 
     At the **Enter Temporary Access Pass** screen shown below, enter the pass above and select **Sign in**.
 
-    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](../img/windows-auth-login.png)
+    ![Example Temporary Access Pass sign-in screen from Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/authentication/media/how-to-authentication-temporary-access-pass/enter.png)
+
+    *Example from [Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/authentication/howto-authentication-temporary-access-pass#use-a-temporary-access-pass). Use your lab credentials above; the account name and branding may differ.*
 
 5. Return to the GitHub Copilot app and switch to the **Installed** tab. Under **MCP Servers**, confirm that both servers are toggled on and each has a green check mark. If sign-in still fails, let a proctor know.
 
@@ -207,19 +209,19 @@ In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** e
 1. Open **notebooks/workiq-mcp.ipynb** and run each cell. You sign in, list the tools, ask about the sample emails, discover resource paths and schemas, fetch structured email data, and discover agents.
 2. Open **notebooks/workiq-mcp-actions.ipynb** to explore the write tools, inspect schemas, and preview create, update, delete, and send-mail operations. Writes are disabled by default.
 
-    **⚠️ Known issue:** Work IQ MCP actions currently do not work in the Skillable lab. The lab advertises only read operations, and calendar write-schema requests are denied. Skip this step for now, including its schema-discovery cell, which can fail even when writes are disabled. We are tracking the issue in [GitHub issue #15](https://github.com/microsoft/ignite26-PREL42/issues/15).
+    > [!Alert] **Known issue:** Work IQ MCP actions currently do not work in the Skillable lab. The lab advertises only read operations, and calendar write-schema requests are denied. Skip this step for now, including its schema-discovery cell, which can fail even when writes are disabled. We are tracking the issue in [GitHub issue #15](https://github.com/microsoft/ignite26-PREL42/issues/15).
 
 3. Open **notebooks/workiq-a2a.ipynb** to discover Work IQ as a remote agent and delegate an email-summary task through A2A.
 
-**⚠️ Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
-
-1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
-2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
-3. Close VS Code completely and restart it.
+> [!Alert] **Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
+>
+> 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
+> 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
+> 3. Close VS Code completely and restart it.
 
 ## Use Work IQ in the GitHub Copilot app
 
-**⚠️ Sign-in window:** The Microsoft Entra sign-in pop-up can open behind the GitHub Copilot app and other windows. If no prompt is visible after selecting **Sign in**, minimize (do not close) the app, browser, and other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
+> [!Alert] **Sign-in window:** The Microsoft Entra sign-in pop-up can open behind the GitHub Copilot app and other windows. If no prompt is visible after selecting **Sign in**, minimize (do not close) the app, browser, and other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
 
 Work IQ is available as a plugin, so you install it instead of adding the MCP server yourself.
 
@@ -238,7 +240,9 @@ Work IQ is available as a plugin, so you install it instead of adding the MCP se
 
     At the **Enter Temporary Access Pass** screen shown below, enter the pass above and select **Sign in**.
 
-    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](../img/windows-auth-login.png)
+    ![Example Temporary Access Pass sign-in screen from Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/authentication/media/how-to-authentication-temporary-access-pass/enter.png)
+
+    *Example from [Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/authentication/howto-authentication-temporary-access-pass#use-a-temporary-access-pass). Use your lab credentials above; the account name and branding may differ.*
 
 7. Return to the chat. If the original request has not continued, send the prompt again. Confirm that Work IQ returns a summary of the sample emails. If sign-in still fails or the chat reports that the MCP server is not configured, let a proctor know.
 
@@ -259,11 +263,11 @@ In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** e
 5. Open **notebooks/foundryiq-workiq.ipynb** and run each cell. You add a Work IQ knowledge source, so a knowledge base can search your emails alongside the HR documents.
 6. Open **notebooks/foundryiq-webiq.ipynb** and run each cell. You add a Web IQ knowledge source, so answers combine the HR documents with web results.
 
-**⚠️ Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
-
-1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
-2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
-3. Close VS Code completely and restart it.
+> [!Alert] **Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
+>
+> 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
+> 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
+> 3. Close VS Code completely and restart it.
 
 ## Use Foundry IQ in the GitHub Copilot app
 
@@ -358,7 +362,7 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
     At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**. Complete any requested consent. This sign-in is separate from your Azure Developer CLI sign-in for model access.
 
-    If the sign-in window is hidden, minimize the other windows **inside the lab virtual machine** until you find it. Keep the outer browser hosting the Skillable lab open.
+    > [!Alert] **Sign-in window:** If the sign-in window is hidden, minimize the other windows **inside the lab virtual machine** until you find it. Keep the outer browser hosting the Skillable lab open.
 
 3. Wait for the terminal to show **Running on http://127.0.0.1:8088**. The local playground opens in the browser. If it opened earlier, wait for the agent to start before sending a message.
 4. In the local playground, ask:
@@ -368,7 +372,7 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 5. Review the answer and its sources. Confirm that it refers to messages in your lab mailbox.
 6. Stop the local agent with **Ctrl+C** in the terminal where you started it.
 
-> **Local sign-in is single-user:** The local agent keeps its token cache in memory and renews tokens for the user who signed in at startup. Do not share or expose the local port. To change users, or if sign-in expires or is revoked, stop and restart the agent and sign in again.
+> [!Alert] **Local sign-in is single-user:** The local agent keeps its token cache in memory and renews tokens for the user who signed in at startup. Do not share or expose the local port. To change users, or if sign-in expires or is revoked, stop and restart the agent and sign in again.
 
 ### Try the hosted version
 
@@ -385,7 +389,9 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
     +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
 
-4. If Work IQ requests authorization, select **Open consent** on the most recent active consent request. If the chat shows multiple consent buttons, do not reopen links from earlier attempts.
+4. If Work IQ requests authorization, select **Open consent** on the most recent active consent request.
+
+    > [!Alert] **Multiple consent buttons:** If the chat shows multiple consent buttons, do not reopen links from earlier attempts.
 
     Select the same lab account. If prompted to sign in again, use:
 
@@ -396,7 +402,7 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
 5. Close the consent window and return to the hosted playground. If the agent has not continued, send the email question again. Local browser sign-in and hosted MCP authorization are separate; Microsoft Foundry manages the hosted connection for your signed-in identity.
 
-    If a consent window displays **Authentication failed** with **Code ... not found**, close that window and retry the email question in the playground. Do not assume authorization succeeded or failed from the popup alone: confirm that the agent can return your mailbox results. If the request still fails or repeatedly asks for consent, let a proctor know.
+    > [!Alert] **Consent window error:** If a consent window displays **Authentication failed** with **Code ... not found**, close that window and retry the email question in the playground. Do not assume authorization succeeded or failed from the popup alone: confirm that the agent can return your mailbox results. If the request still fails or repeatedly asks for consent, let a proctor know.
 
 6. Review the answer and compare it with the local result. Once the agent returns your mailbox answer, you do not need to select any remaining consent buttons.
 7. Select **Traces** beneath the answer. In **Trajectories**, expand the run and select the Work IQ MCP tool call. In **Input + Output**, inspect the request and returned work context.
