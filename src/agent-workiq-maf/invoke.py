@@ -7,36 +7,10 @@ from pathlib import Path
 import httpx
 from azure.identity import AzureDeveloperCliCredential
 from dotenv import load_dotenv
-from msal import PublicClientApplication
+from workiq_auth import sign_in
 
-WORK_IQ_SCOPE = "api://workiq.svc.cloud.microsoft/WorkIQAgent.Ask"
 WORK_IQ_TOKEN_HEADER = "x-client-workiq-access-token"
 LOCAL_RESPONSES_URL = "http://127.0.0.1:8088/responses"
-
-
-def sign_in() -> dict:
-    """Use the notebook app and scope; keep the token in the test client only."""
-    missing = [
-        name for name in ("WORK_IQ_SEARCH_ENTRA_APP_ID", "WORK_IQ_SEARCH_ENTRA_TENANT_ID") if not os.getenv(name)
-    ]
-    if missing:
-        raise RuntimeError(f"Set these values in the repository .env: {', '.join(missing)}")
-    app = PublicClientApplication(
-        client_id=os.environ["WORK_IQ_SEARCH_ENTRA_APP_ID"],
-        authority=f"https://login.microsoftonline.com/{os.environ['WORK_IQ_SEARCH_ENTRA_TENANT_ID']}",
-    )
-    if os.getenv("CODESPACES") == "true":
-        flow = app.initiate_device_flow(scopes=[WORK_IQ_SCOPE])
-        if "user_code" not in flow:
-            raise RuntimeError(f"Work IQ device sign-in failed: {flow.get('error_description', 'No user code')}")
-        print(flow["message"], flush=True)
-        result = app.acquire_token_by_device_flow(flow)
-    else:
-        result = app.acquire_token_interactive([WORK_IQ_SCOPE])
-    if not result or not result.get("access_token"):
-        description = result.get("error_description", "No access token returned") if result else "Sign-in cancelled"
-        raise RuntimeError(f"Work IQ authentication failed: {description}")
-    return result
 
 
 def invoke(question: str, *, remote: bool) -> str:

@@ -9,12 +9,12 @@ Microsoft Agent Framework agents, each deployable as a Foundry Hosted Agent:
 | `agent-toolbox-foundryiq` | Uses a Foundry toolbox with the knowledge base, web search, and code interpreter |
 | `agent-toolbox-foundryiq-workiq` | Uses a Foundry toolbox over a knowledge base with a Work IQ source |
 | `agent-toolbox-workiq` | Uses a Work IQ toolbox for the caller's Microsoft 365 context |
-| `agent-workiq-maf` | Direct Work IQ MCP using a delegated token supplied per Responses request, without Toolbox |
+| `agent-workiq-maf` | Direct Work IQ MCP with local browser sign-in or a forwarded hosted caller token, without Toolbox |
 
 ## Try Work IQ without Toolbox
 
 `agent-workiq-maf` runs the **same Responses server locally and in Microsoft Foundry**.
-Its test client uses the same app registration and delegated `WorkIQAgent.Ask` scope as
+Local sign-in and the optional test client use the same app registration and delegated `WorkIQAgent.Ask` scope as
 [`workiq-mcp.ipynb`](../notebooks/workiq-mcp.ipynb). The server calls the Work IQ MCP gateway directly
 and exposes only a read-only `ask_work_iq` tool to the model. It does not use Toolbox or RemoteA2A.
 
@@ -25,22 +25,37 @@ The Work IQ user needs a Microsoft 365 Copilot license.
 
 ### Test locally first
 
-From the repository root, start the server:
+From the repository root, start the agent and local playground:
 
 ```powershell
-azd ai agent run agent-workiq-maf --no-client
+azd ai agent run agent-workiq-maf
 ```
 
-In a second Windows PowerShell terminal, from the repository root:
+Complete the Work IQ browser sign-in with your lab user account. The server becomes ready after
+sign-in; if the playground opens before then, wait for the terminal to show
+**Running on http://127.0.0.1:8088** before sending a message.
+In the local playground, ask:
+
+> Summarize my recent emails about the Professional Claw Hammer. Who sent them, and what actions do they request?
+
+No custom token header or second terminal is needed for the local playground. The local agent keeps
+MSAL's token cache in memory and silently renews the signed-in user's access token for each request.
+If sign-in is revoked or requires interaction again, stop the agent with **Ctrl+C** and restart it.
+Restart to change users, too.
+
+This is a **single-user local development mode**: all headerless requests use the user who signed in
+when the agent started. The server binds to loopback; do not share, expose, or make its port public.
+In GitHub Codespaces, complete the device-code sign-in shown in the terminal and keep the port private.
+
+For an optional command-line check, leave the server running and use a second terminal:
 
 ```powershell
 uv run --project src\agent-workiq-maf python src\agent-workiq-maf\invoke.py --local "Summarize my recent emails about the Professional Claw Hammer. Who sent them, and what actions do they request?"
 ```
 
-In GitHub Codespaces, run `uv run python invoke.py --local "<question>"` from `src/agent-workiq-maf`
-in the second terminal. Use the displayed device code rather than a browser pop-up.
-The client signs in like the notebook, forwards the Work IQ token in `x-client-workiq-access-token`,
-checks the Responses completion status, and prints the answer. Keep the local port private.
+This client signs in separately, forwards its own Work IQ token in `x-client-workiq-access-token`,
+checks the Responses completion status, and prints the answer. An explicit token takes precedence
+over local sign-in.
 
 ### Then test in Microsoft Foundry
 
@@ -71,11 +86,13 @@ for caller permissions. This lab test client acquires its downstream token inter
 notebook; it does not need an OBO exchange or a client secret. A production middle tier would
 acquire the delegated Work IQ token through its own supported authentication/OBO flow.
 
-The server never signs in interactively, caches user tokens across requests, sends them to the model,
-or falls back to application-only Work IQ access. Missing tokens and background execution are rejected.
-Expired tokens require a new invocation with a fresh token; Microsoft Foundry does not exchange
-or refresh a forwarded token. Plain playground or `azd ai agent invoke` requests without the custom
-token header cannot test this direct-auth path. Toolbox examples remain unchanged for comparison.
+**Hosted mode does not use the local sign-in or its token cache.** It never signs in interactively,
+shares a local user's tokens across callers, sends tokens to the model, or falls back to
+application-only Work IQ access. Missing hosted tokens and background execution are rejected.
+Expired forwarded tokens require a new invocation with a fresh token; Microsoft Foundry does not exchange
+or refresh a forwarded token. The standard **hosted** playground cannot test this direct-auth path
+without a caller-supplied Work IQ token header. A working local playground does not establish hosted
+playground compatibility. Toolbox examples remain unchanged for comparison.
 Do not capture `Authorization` or `x-client-workiq-access-token` in proxy or telemetry header logging.
 
 For offline checks, run `uv run python -m unittest -v test_main` from the `agent-workiq-maf` directory.

@@ -16,6 +16,7 @@ from azure.ai.agentserver.responses import ResponseContext
 from azure.ai.agentserver.responses.models import CreateResponse, ResponseStreamEvent
 from azure.identity import AzureDeveloperCliCredential, ManagedIdentityCredential
 from dotenv import load_dotenv
+from workiq_auth import WorkIQAuth
 
 WORK_IQ_MCP_URL = "https://workiq.svc.cloud.microsoft/mcp"
 WORK_IQ_TOKEN_HEADER = "x-client-workiq-access-token"
@@ -47,7 +48,13 @@ async def ask_work_iq(question: str) -> str:
 
 
 class WorkIQResponsesHost(ResponsesHostServer):
-    """Bind a forwarded Work IQ token only while its Responses request runs."""
+    """Bind a local user's or forwarded caller's Work IQ token to its request."""
+
+    def __init__(self, agent: Agent, *, local_auth: WorkIQAuth | None = None) -> None:
+        if local_auth is not None and "FOUNDRY_HOSTING_ENVIRONMENT" in os.environ:
+            raise ValueError("Shared local Work IQ sign-in is not allowed in Microsoft Foundry.")
+        self._local_auth = local_auth
+        super().__init__(agent)
 
     async def _handle_response(
         self,
@@ -58,6 +65,8 @@ class WorkIQResponsesHost(ResponsesHostServer):
         if request.background:
             raise ValueError("Work IQ requires a foreground request with a current delegated token.")
         token = context.client_headers.get(WORK_IQ_TOKEN_HEADER)
+        if not token and self._local_auth is not None:
+            token = await asyncio.to_thread(self._local_auth.get_access_token)
         if not token:
             raise PermissionError(f"Supply a delegated Work IQ token in {WORK_IQ_TOKEN_HEADER}.")
         events = await super()._handle_response(request, context, cancellation_signal)
@@ -85,6 +94,12 @@ def main() -> None:
     if missing:
         raise RuntimeError(f"Configure these model settings: {', '.join(missing)}")
 
+    local_auth = None
+    if not hosted:
+        logging.info("Local single-user mode: complete Work IQ sign-in before the playground becomes ready.")
+        local_auth = WorkIQAuth()
+        local_auth.sign_in()
+
     credential = (
         ManagedIdentityCredential()
         if hosted
@@ -109,7 +124,7 @@ def main() -> None:
             tools=[tool(ask_work_iq)],
             default_options={"store": False},
         )
-        WorkIQResponsesHost(agent).run(host="0.0.0.0" if hosted else "127.0.0.1")
+        WorkIQResponsesHost(agent, local_auth=local_auth).run(host="0.0.0.0" if hosted else "127.0.0.1")
 
 
 if __name__ == "__main__":

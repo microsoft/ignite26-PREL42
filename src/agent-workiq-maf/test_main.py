@@ -10,7 +10,8 @@ from unittest.mock import patch
 import httpx
 import invoke as test_client
 import main as workmate
-from agent_framework import ChatResponse, Message
+import workiq_auth
+from agent_framework import ChatResponse, ChatResponseUpdate, Content, Message
 from agent_framework.exceptions import ToolExecutionException
 
 SETTINGS = {
@@ -72,6 +73,7 @@ class HostAuthTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_host_rejects_background_and_missing_header(self):
         host = object.__new__(workmate.WorkIQResponsesHost)
+        host._local_auth = None
         context = SimpleNamespace(client_headers={})
         with self.assertRaisesRegex(PermissionError, workmate.WORK_IQ_TOKEN_HEADER):
             await host._handle_response(SimpleNamespace(background=False), context, asyncio.Event())
@@ -114,6 +116,82 @@ class HostAuthTests(unittest.IsolatedAsyncioTestCase):
             await host._cleanup_agent()
         self.assertEqual(seen_tokens, ["test-user-a", "test-user-b"])
         self.assertIsNone(workmate._work_iq_token.get())
+
+    async def test_local_playground_requests_need_no_token_header(self):
+        seen_tokens = []
+
+        class RecordingAgent:
+            context_providers = []
+
+            def run(self, *, stream, **kwargs):
+                def record_token():
+                    token = workmate._work_iq_token.get()
+                    seen_tokens.append(token)
+                    if token in str(kwargs):
+                        raise AssertionError("A delegated token reached model inputs.")
+
+                async def updates():
+                    record_token()
+                    yield ChatResponseUpdate(role="assistant", contents=[Content.from_text("Local playground answer")])
+
+                async def response():
+                    record_token()
+                    return ChatResponse(messages=Message("assistant", ["Local playground answer"]))
+
+                return updates() if stream else response()
+
+        with (
+            patch.dict(os.environ, {"OTEL_SDK_DISABLED": "true"}, clear=True),
+            patch.object(workiq_auth, "WorkIQAuth") as auth_factory,
+        ):
+            auth = auth_factory.return_value
+            auth.get_access_token.side_effect = [
+                "local-token-1",
+                "local-token-2",
+                "local-stream-token",
+                PermissionError("Sign in again"),
+            ]
+            host = workmate.WorkIQResponsesHost(RecordingAgent(), local_auth=auth)
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=host),
+                base_url="http://localhost",
+            ) as client:
+                for _ in range(2):
+                    response = await client.post(
+                        "/responses",
+                        json={"input": "Summarize my emails.", "stream": False, "store": True},
+                    )
+                    self.assertEqual(response.status_code, 200, response.text)
+                    self.assertEqual(response.json()["status"], "completed", response.text)
+                    self.assertNotIn("local-token", response.text)
+                response = await client.post(
+                    "/responses",
+                    json={"input": "Summarize my emails.", "stream": True, "background": False, "store": True},
+                )
+                self.assertEqual(response.status_code, 200, response.text)
+                self.assertIn("event: response.completed", response.text)
+                self.assertIn("Local playground answer", response.text)
+                self.assertNotIn("local-stream-token", response.text)
+                response = await client.post(
+                    "/responses",
+                    headers={workmate.WORK_IQ_TOKEN_HEADER: "explicit-user-token"},
+                    json={"input": "Summarize my emails.", "stream": False, "store": False},
+                )
+                self.assertEqual(response.json()["status"], "completed", response.text)
+                response = await client.post(
+                    "/responses",
+                    json={"input": "Summarize my emails.", "stream": False, "store": False},
+                )
+                self.assertTrue(response.status_code >= 400 or response.json().get("status") == "failed", response.text)
+            await host._cleanup_agent()
+        self.assertEqual(seen_tokens, ["local-token-1", "local-token-2", "local-stream-token", "explicit-user-token"])
+        self.assertEqual(auth.get_access_token.call_count, 4)
+        self.assertIsNone(workmate._work_iq_token.get())
+
+    async def test_hosted_server_cannot_enable_shared_local_sign_in(self):
+        with patch.dict(os.environ, {"FOUNDRY_HOSTING_ENVIRONMENT": "test"}):
+            with self.assertRaisesRegex(ValueError, "not allowed in Microsoft Foundry"):
+                workmate.WorkIQResponsesHost(None, local_auth=object())
 
 
 class MCPIntegrationTests(unittest.IsolatedAsyncioTestCase):
@@ -208,6 +286,7 @@ class StartupTests(unittest.TestCase):
                     patch.object(workmate, "FoundryChatClient") as model,
                     patch.object(workmate, "Agent") as agent,
                     patch.object(workmate, "WorkIQResponsesHost") as host,
+                    patch.object(workmate, "WorkIQAuth") as auth_factory,
                 ):
                     workmate.main()
                     selected = hosted_credential if hosted else local_credential
@@ -216,15 +295,71 @@ class StartupTests(unittest.TestCase):
                     other.assert_not_called()
                     self.assertEqual(model.call_args.kwargs["credential"], selected.return_value)
                     self.assertEqual(agent.call_args.kwargs["tools"][0].name, "ask_work_iq")
-                    host.assert_called_once_with(agent.return_value)
+                    local_auth = None if hosted else auth_factory.return_value
+                    host.assert_called_once_with(agent.return_value, local_auth=local_auth)
+                    if hosted:
+                        auth_factory.assert_not_called()
+                    else:
+                        auth_factory.assert_called_once_with()
+                        local_auth.sign_in.assert_called_once_with()
                     host.return_value.run.assert_called_once_with(host="0.0.0.0" if hosted else "127.0.0.1")
                     self.assertEqual(dotenv.call_count, 0 if hosted else 1)
+
+    def test_failed_local_sign_in_does_not_start_server(self):
+        with (
+            patch.dict(os.environ, SETTINGS, clear=True),
+            patch.object(workmate, "load_dotenv"),
+            patch.object(workmate, "WorkIQAuth") as auth,
+            patch.object(workmate, "WorkIQResponsesHost") as host,
+        ):
+            auth.return_value.sign_in.side_effect = RuntimeError("Work IQ authentication failed")
+            with self.assertRaisesRegex(RuntimeError, "authentication failed"):
+                workmate.main()
+            host.assert_not_called()
+
+
+class LocalTokenTests(unittest.TestCase):
+    def setUp(self):
+        self.enterContext(patch.dict(os.environ, SETTINGS, clear=True))
+        self.app_factory = self.enterContext(patch.object(workiq_auth, "PublicClientApplication"))
+        self.auth = workiq_auth.WorkIQAuth()
+        self.app = self.app_factory.return_value
+
+    def test_silent_token_acquisition_uses_only_signed_in_account(self):
+        account = {"home_account_id": "test-user"}
+        self.app.get_accounts.return_value = [account]
+        for token in ("cached-token", "renewed-token"):
+            self.app.acquire_token_silent_with_error.return_value = {"access_token": token}
+            self.assertEqual(self.auth.get_access_token(), token)
+        self.app.acquire_token_silent_with_error.assert_called_with([workiq_auth.WORK_IQ_SCOPE], account=account)
+        self.app.acquire_token_interactive.assert_not_called()
+
+    def test_missing_or_ambiguous_account_is_rejected(self):
+        for accounts in ([], [{"home_account_id": "a"}, {"home_account_id": "b"}]):
+            self.app.get_accounts.return_value = accounts
+            with self.assertRaisesRegex(PermissionError, "one lab user"):
+                self.auth.get_access_token()
+        self.app.acquire_token_silent_with_error.assert_not_called()
+
+    def test_expired_or_revoked_auth_requires_restart_without_another_browser(self):
+        self.app.get_accounts.return_value = [{"home_account_id": "test-user"}]
+        for result in (None, {"error": "interaction_required"}, {"access_token": ""}):
+            self.app.acquire_token_silent_with_error.return_value = result
+            with self.assertRaisesRegex(PermissionError, "Restart the local agent"):
+                self.auth.get_access_token()
+        self.app.acquire_token_interactive.assert_not_called()
+
+    def test_missing_app_settings_fail_before_authentication(self):
+        with patch.dict(os.environ, {}, clear=True):
+            with self.assertRaisesRegex(RuntimeError, "WORK_IQ_SEARCH_ENTRA_APP_ID"):
+                workiq_auth.WorkIQAuth()
+        self.assertEqual(self.app_factory.call_count, 1)
 
 
 class InvokeTests(unittest.TestCase):
     def setUp(self):
         self.enterContext(patch.dict(os.environ, SETTINGS, clear=True))
-        self.app_factory = self.enterContext(patch.object(test_client, "PublicClientApplication"))
+        self.app_factory = self.enterContext(patch.object(workiq_auth, "PublicClientApplication"))
         self.app = self.app_factory.return_value
         self.auth_result = {"access_token": "test-user-token", "id_token_claims": {"oid": "test-user-oid"}}
         self.app.acquire_token_interactive.return_value = self.auth_result
@@ -236,7 +371,7 @@ class InvokeTests(unittest.TestCase):
 
     def test_local_client_forwards_only_work_iq_token_outside_body(self):
         self.assertEqual(test_client.invoke("Summarize my emails.", remote=False), "Test answer [1]")
-        self.app.acquire_token_interactive.assert_called_once_with([test_client.WORK_IQ_SCOPE])
+        self.app.acquire_token_interactive.assert_called_once_with([workiq_auth.WORK_IQ_SCOPE])
         self.assertEqual(self.post.call_args.args[0], test_client.LOCAL_RESPONSES_URL)
         self.assertEqual(self.post.call_args.kwargs["headers"], {test_client.WORK_IQ_TOKEN_HEADER: "test-user-token"})
         self.assertNotIn("test-user-token", json.dumps(self.post.call_args.kwargs["json"]))
@@ -269,7 +404,7 @@ class InvokeTests(unittest.TestCase):
         self.app.acquire_token_by_device_flow.return_value = self.auth_result
         with patch("builtins.print"):
             self.assertEqual(test_client.sign_in(), self.auth_result)
-        self.app.initiate_device_flow.assert_called_once_with(scopes=[test_client.WORK_IQ_SCOPE])
+        self.app.initiate_device_flow.assert_called_once_with(scopes=[workiq_auth.WORK_IQ_SCOPE])
         self.app.acquire_token_by_device_flow.assert_called_once_with(flow)
         self.app.acquire_token_interactive.assert_not_called()
 
