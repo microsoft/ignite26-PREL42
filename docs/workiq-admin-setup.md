@@ -1,7 +1,7 @@
 # Admin Setup — Work IQ
 
 **Who this is for**: a tenant admin (Cloud Application Administrator or above). You are enabling a
-developer to run the Work IQ notebooks and the `workmate-agent` against your tenant's Microsoft 365
+developer to run the Work IQ notebooks and `agent-workiq-maf` against your tenant's Microsoft 365
 work data.
 
 **Time**: ~5 minutes. **Result**: a Work IQ Entra app that the notebooks sign in with and that Azure AI Search
@@ -56,21 +56,6 @@ Work IQ token or impersonated identity. Local testing keeps the notebook-style b
 See [MCP authentication](https://learn.microsoft.com/azure/foundry/agents/how-to/mcp-authentication)
 and the [local-to-hosted steps](../src/README.md#try-work-iq-without-toolbox).
 
-## For the legacy Foundry `work_iq_preview` toolbox example
-
-The hosted `workmate-agent` connects to Work IQ through a Foundry **`RemoteA2A`** project
-connection targeting `https://workiq.svc.cloud.microsoft/a2a/`, `authType=OAuth2`, **BYO Entra app
-only** (scopes `WorkIQAgent.Ask` + `offline_access`). VNet-restricted Foundry projects are not
-supported. `infra/create-toolbox-workiq.py` (run by `azd up`'s postprovision hook) reuses the app above,
-adds a client secret and the Foundry callback URI to it, and creates the `work-iq-connection` RemoteA2A
-connection and the `work-iq-tools` toolbox. The secret goes straight to the connection and is not written to
-`.env`. Admin consent is already granted by `create-workiq-entra.py`. See the
-[Work IQ tool docs](https://learn.microsoft.com/azure/foundry/agents/how-to/tools/work-iq).
-
-If multiple projects share one Foundry resource, set `WORK_IQ_CONNECTION_NAME` to a unique value
-before provisioning because connection names are unique across the parent resource. Override
-`CUSTOM_FOUNDRY_WORKIQ_TOOLBOX_NAME` when the toolbox also needs an environment-specific name.
-
 ## Which Entra app is which
 
 One Work IQ Entra app (created by `infra/create-workiq-entra.py`, `WORK_IQ_SEARCH_ENTRA_*`) serves every Work IQ path:
@@ -79,12 +64,11 @@ One Work IQ Entra app (created by `infra/create-workiq-entra.py`, `WORK_IQ_SEARC
 |---|---|
 | `foundryiq-workiq.ipynb` | Azure AI Search calls Work IQ as the app through a federated credential (billed with Copilot credits) |
 | Direct `workiq-*` notebooks | Interactive sign-in for `api://workiq.svc.cloud.microsoft/WorkIQAgent.Ask` |
-| `agent-toolbox-workiq` | The app's client secret backs the Foundry `RemoteA2A` OAuth2 connection |
 | `agent-workiq-maf` | Local: notebook-style browser sign-in. Hosted: per-user OAuth identity passthrough through the direct MCP connection; the app secret stays in Microsoft Foundry, not the agent |
 
-To compare direct MCP with the Toolbox path, run the
-[Agent Framework local-to-hosted experiment](../src/README.md#try-work-iq-without-toolbox).
-This reuses the notebook app without changing the Toolbox agent or its connection. The hosted agent's
+To test direct Work IQ MCP, follow the
+[Agent Framework local-to-hosted steps](../src/README.md#try-work-iq-without-toolbox).
+This reuses the notebook app. The hosted agent's
 managed identity provides model access, not delegated Work IQ access; each user consents separately.
 
 ## Troubleshooting

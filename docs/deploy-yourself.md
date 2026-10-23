@@ -110,14 +110,14 @@ A related option is VS Code Dev Containers, which will open the project in your 
     # Work IQ knowledge base and toolbox, used by agent-toolbox-foundryiq-workiq
     azd env set ENABLE_WORK_IQ_KB_TOOLBOX true
 
-    # Work IQ Entra app and toolbox, used by agent-toolbox-workiq
+    # Work IQ Entra app and direct MCP OAuth connection, used by agent-workiq-maf
     azd env set ENABLE_WORK_IQ true
     ```
 
     Each flag has prerequisites described in its own section: [Fabric IQ](#enable-fabric-iq),
     [Work IQ retrieval for Azure AI Search](#enable-work-iq-retrieval-for-azure-ai-search),
     [the hosted Foundry IQ Work IQ agent](#enable-the-hosted-foundry-iq-work-iq-agent), and
-    [the hosted Work IQ toolbox agent](#enable-the-hosted-work-iq-toolbox-agent).
+    [the direct Work IQ MCP agent](#enable-the-direct-work-iq-mcp-agent).
     You can also set any of these later and re-run `azd provision`.
 
     A Web IQ account is always created. After provisioning, get its key from the Web IQ portal, since it
@@ -247,7 +247,7 @@ signed-in user's Search-scoped token as `x-ms-query-source-authorization` for Wo
 Invoke this agent through its deployed endpoint: local runs do not receive the hosted platform's
 `x-agent-foundry-call-id`, so Toolbox cannot resolve the signed-in caller for Work IQ retrieval.
 
-### Enable the hosted Work IQ toolbox agent
+### Enable the direct Work IQ MCP agent
 
 Work IQ setup is opt-in because its first run requires a Global Administrator and creates a tenant app
 registration. Authenticate azd as that administrator, enable Work IQ, and rerun provisioning:
@@ -260,8 +260,9 @@ azd provision
 
 The postprovision helper first runs `infra/create-workiq-entra.py` (the shared Work IQ Entra app described
 above). It then creates or reuses the Work IQ service principal, reuses that application, adds a client secret
-and Foundry's returned callback URI to it, creates the OAuth2 `RemoteA2A` connection, and publishes
-`work-iq-tools`. The generated client secret is sent directly to the connection and is not written to `.env`.
+and Foundry's returned callback URI to it, and creates the OAuth2 `RemoteTool` connection
+`work-iq-mcp-connection` targeting `https://workiq.svc.cloud.microsoft/mcp`.
+The generated client secret is sent directly to the connection and is not written to `.env`.
 If `WORK_IQ_SEARCH_ENTRA_APP_ID` is not set, the helper creates its own application instead.
 
 Admin consent allows the application to request `WorkIQAgent.Ask`; it does not authorize individual
@@ -341,7 +342,7 @@ The notebooks create their own knowledge bases and are unaffected by these.
 | `agent-foundryiq-mcp` | Connects to the same knowledge base through its Foundry IQ MCP endpoint |
 | `agent-toolbox-foundryiq` | Uses a Foundry toolbox holding that knowledge base, web search, and code interpreter |
 | `agent-toolbox-foundryiq-workiq` | Uses a Foundry toolbox over the multi-source Work IQ knowledge base |
-| `agent-toolbox-workiq` | Uses an OAuth2 `RemoteA2A` connection and toolbox for the caller's Microsoft 365 context |
+| `agent-workiq-maf` | Uses direct Work IQ MCP with local browser sign-in or hosted OAuth identity passthrough, without Toolbox |
 
 Start any of the agents locally, and test them with either the local playground or CLI:
 
@@ -355,7 +356,7 @@ azd ai agent invoke --local "What benefits are available, and when do I need to 
 azd ai agent run agent-toolbox-foundryiq
 azd ai agent invoke --local "What benefits are available, and when do I need to enroll?"
 
-azd ai agent run agent-toolbox-workiq
+azd ai agent run agent-workiq-maf
 azd ai agent invoke --local \
   "Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested."
 ```
@@ -377,8 +378,17 @@ azd ai agent invoke agent-toolbox-foundryiq-workiq \
   --new-session --new-conversation \
   "Search my recent emails for Professional Claw Hammer and summarize requested actions. Use the knowledge base and its Work IQ source."
 
-azd deploy agent-toolbox-workiq
-azd ai agent invoke agent-toolbox-workiq \
+azd deploy agent-workiq-maf
+azd ai agent show agent-workiq-maf
+```
+
+For `agent-workiq-maf`, complete the local Work IQ browser sign-in before using the local playground.
+For the hosted version, open the **Playground URL** returned by `azd ai agent show`, ask the email
+question, and complete Work IQ consent using the latest active **Open consent** button. Resend the
+question if the consent turn has stopped. After authorization, you can also invoke it from the CLI:
+
+```bash
+azd ai agent invoke agent-workiq-maf \
   --new-session --new-conversation \
   "Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested."
 ```
