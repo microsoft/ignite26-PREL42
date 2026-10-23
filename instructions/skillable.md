@@ -154,7 +154,7 @@ When you open each notebook, select **Select Kernel**, and choose the **ignite26
 
 ## Use Fabric IQ in the GitHub Copilot app
 
-> [!Hint] **Sign-in window:** The Microsoft Entra sign-in window can open behind the GitHub Copilot app and other windows. If no prompt is visible, minimize the app, browser, and any other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
+> [!Help] **Sign-in window:** The Microsoft Entra sign-in window can open behind the GitHub Copilot app and other windows. If no prompt is visible, minimize the app, browser, and any other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
 
 Add two MCP servers, one for the ontology and one for the data agent. Both sign you in with your Microsoft Entra account, so they don't need headers.
 
@@ -176,7 +176,7 @@ In Visual Studio Code, open the **.env** file in the lab folder and find **FABRI
 
     At the **Enter Temporary Access Pass** screen shown below, enter the pass above and select **Sign in**.
 
-    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](../img/windows-auth-login.png)
+    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](https://raw.githubusercontent.com/microsoft/ignite26-PREL42/refs/heads/main/img/windows-auth-login.png)
 
 5. Return to the GitHub Copilot app and switch to the **Installed** tab. Under **MCP Servers**, confirm that both servers are toggled on and each has a green check mark. If sign-in still fails, let a proctor know.
 
@@ -219,7 +219,7 @@ In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** e
 
 ## Use Work IQ in the GitHub Copilot app
 
-> [!Hint] **Sign-in window:** The Microsoft Entra sign-in pop-up can open behind the GitHub Copilot app and other windows. If no prompt is visible after selecting **Sign in**, minimize (do not close) the app, browser, and other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
+> [!Help] **Sign-in window:** The Microsoft Entra sign-in pop-up can open behind the GitHub Copilot app and other windows. If no prompt is visible after selecting **Sign in**, minimize (do not close) the app, browser, and other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
 
 Work IQ is available as a plugin, so you install it instead of adding the MCP server yourself.
 
@@ -238,7 +238,7 @@ Work IQ is available as a plugin, so you install it instead of adding the MCP se
 
     At the **Enter Temporary Access Pass** screen shown below, enter the pass above and select **Sign in**.
 
-    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](../img/windows-auth-login.png)
+    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](https://raw.githubusercontent.com/microsoft/ignite26-PREL42/refs/heads/main/img/windows-auth-login.png)
 
 7. Return to the chat. If the original request has not continued, send the prompt again. Confirm that Work IQ returns a summary of the sample emails. If sign-in still fails or the chat reports that the MCP server is not configured, let a proctor know.
 
@@ -358,7 +358,7 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
     At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**. Complete any requested consent. This sign-in is separate from your Azure Developer CLI sign-in for model access.
 
-    > [!Hint] **Sign-in window:** If the sign-in window is hidden, minimize the other windows **inside the lab virtual machine** until you find it. Keep the outer browser hosting the Skillable lab open.
+    > [!Help] **Sign-in window:** If the sign-in window is hidden, minimize the other windows **inside the lab virtual machine** until you find it. Keep the outer browser hosting the Skillable lab open.
 
 3. Wait for the terminal to show **Running on http://127.0.0.1:8088**. The local playground opens in the browser. If it opened earlier, wait for the agent to start before sending a message.
 4. In the local playground, ask:
