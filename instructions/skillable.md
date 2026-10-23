@@ -154,7 +154,7 @@ When you open each notebook, select **Select Kernel**, and choose the **ignite26
 
 ## Use Fabric IQ in the GitHub Copilot app
 
-**⚠️ Sign-in window:** The Microsoft Entra sign-in pop-up can open behind the GitHub Copilot app and other windows. If no prompt is visible, minimize (do not close) the app, browser, and other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
+**⚠️ Sign-in window:** The Microsoft Entra sign-in window can open behind the GitHub Copilot app and other windows. If no prompt is visible, minimize the app, browser, and any other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
 
 Add two MCP servers, one for the ontology and one for the data agent. Both sign you in with your Microsoft Entra account, so they don't need headers.
 
