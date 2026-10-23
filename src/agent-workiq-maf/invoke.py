@@ -14,7 +14,7 @@ LOCAL_RESPONSES_URL = "http://127.0.0.1:8088/responses"
 
 
 def invoke(question: str, *, remote: bool) -> str:
-    """Forward a fresh Work IQ token to the local server or the lab's hosted agent."""
+    """Call locally with a Work IQ token, or remotely with Microsoft Foundry auth."""
     endpoint = LOCAL_RESPONSES_URL
     if remote:
         project = httpx.URL(os.environ["FOUNDRY_PROJECT_ENDPOINT"])
@@ -30,19 +30,15 @@ def invoke(question: str, *, remote: bool) -> str:
         endpoint = (
             f"{str(project).rstrip('/')}/agents/agent-workiq-maf/endpoint/protocols/openai/responses?api-version=v1"
         )
-    result = sign_in()
-    headers = {WORK_IQ_TOKEN_HEADER: result["access_token"]}
+    headers = {}
     if remote:
-        # MSAL validates this identity claim; never decode a downstream access token.
-        user_id = result.get("id_token_claims", {}).get("oid")
-        if not user_id:
-            raise RuntimeError("Work IQ sign-in returned no user object ID for Foundry user isolation.")
-        headers["x-ms-user-identity"] = user_id
         with AzureDeveloperCliCredential(
             tenant_id=os.getenv("AZURE_TENANT_ID") or os.environ["WORK_IQ_SEARCH_ENTRA_TENANT_ID"],
             process_timeout=60,
         ) as credential:
             headers["Authorization"] = f"Bearer {credential.get_token('https://ai.azure.com/.default').token}"
+    else:
+        headers[WORK_IQ_TOKEN_HEADER] = sign_in()["access_token"]
 
     with httpx.Client(timeout=240, follow_redirects=False) as client:
         response = client.post(
@@ -52,6 +48,8 @@ def invoke(question: str, *, remote: bool) -> str:
         )
         response.raise_for_status()
     body = response.json()
+    if any(item.get("type") == "oauth_consent_request" for item in body.get("output", [])):
+        raise PermissionError("Authorize the Work IQ MCP connection in the Microsoft Foundry playground, then retry.")
     if body.get("status") != "completed":
         raise RuntimeError(f"Agent response did not complete: {body.get('status')}; {body.get('error')}")
     text = "\n".join(
@@ -67,7 +65,7 @@ def invoke(question: str, *, remote: bool) -> str:
 
 if __name__ == "__main__":
     load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=True)
-    parser = argparse.ArgumentParser(description="Sign in to Work IQ and test the Workmate Responses server.")
+    parser = argparse.ArgumentParser(description="Test Workmate locally or in Microsoft Foundry.")
     target = parser.add_mutually_exclusive_group(required=True)
     target.add_argument("--local", action="store_true", help="Call the loopback Responses server on port 8088.")
     target.add_argument(

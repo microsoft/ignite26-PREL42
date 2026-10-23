@@ -5,14 +5,15 @@ import json
 import os
 import unittest
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import invoke as test_client
 import main as workmate
 import workiq_auth
-from agent_framework import ChatResponse, ChatResponseUpdate, Content, Message
+from agent_framework import Agent, AgentResponse, AgentResponseUpdate, Content, ResponseStream
 from agent_framework.exceptions import ToolExecutionException
+from agent_framework.foundry import FoundryChatClient
 
 SETTINGS = {
     "FOUNDRY_PROJECT_ENDPOINT": "https://example.services.ai.azure.com/api/projects/lab",
@@ -76,22 +77,30 @@ class HostAuthTests(unittest.IsolatedAsyncioTestCase):
         host._local_auth = None
         context = SimpleNamespace(client_headers={})
         with self.assertRaisesRegex(PermissionError, workmate.WORK_IQ_TOKEN_HEADER):
-            await host._handle_response(SimpleNamespace(background=False), context, asyncio.Event())
+            async for _ in host._handle_response({"background": False}, context, asyncio.Event()):
+                pass
         with self.assertRaisesRegex(ValueError, "foreground"):
-            await host._handle_response(SimpleNamespace(background=True), context, asyncio.Event())
+            async for _ in host._handle_response({"background": True}, context, asyncio.Event()):
+                pass
 
     async def test_native_responses_http_request_binds_and_clears_token(self):
         seen_tokens = []
 
-        class RecordingAgent:
-            context_providers = []
+        class RecordingAgent(Agent):
+            def __init__(self):
+                super().__init__(
+                    client=MagicMock(spec=FoundryChatClient, STORES_BY_DEFAULT=True), name="RecordingAgent"
+                )
 
-            async def run(self, **kwargs):
-                token = workmate._work_iq_token.get()
-                seen_tokens.append(token)
-                if token and token in str(kwargs):
-                    raise AssertionError("A delegated token reached model inputs.")
-                return ChatResponse(messages=Message("assistant", ["Test answer [1]"]))
+            def run(self, **kwargs):
+                async def updates():
+                    token = workmate._work_iq_token.get()
+                    seen_tokens.append(token)
+                    if token and token in str(kwargs):
+                        raise AssertionError("A delegated token reached model inputs.")
+                    yield AgentResponseUpdate(role="assistant", contents=[Content.from_text("Test answer [1]")])
+
+                return ResponseStream(updates(), finalizer=AgentResponse.from_updates)
 
         with patch.dict(os.environ, {"OTEL_SDK_DISABLED": "true"}, clear=True):
             host = workmate.WorkIQResponsesHost(RecordingAgent())
@@ -113,15 +122,17 @@ class HostAuthTests(unittest.IsolatedAsyncioTestCase):
                     json={"input": "Summarize my emails.", "stream": False, "store": False},
                 )
                 self.assertTrue(response.status_code >= 400 or response.json().get("status") == "failed", response.text)
-            await host._cleanup_agent()
         self.assertEqual(seen_tokens, ["test-user-a", "test-user-b"])
         self.assertIsNone(workmate._work_iq_token.get())
 
     async def test_local_playground_requests_need_no_token_header(self):
         seen_tokens = []
 
-        class RecordingAgent:
-            context_providers = []
+        class RecordingAgent(Agent):
+            def __init__(self):
+                super().__init__(
+                    client=MagicMock(spec=FoundryChatClient, STORES_BY_DEFAULT=True), name="RecordingAgent"
+                )
 
             def run(self, *, stream, **kwargs):
                 def record_token():
@@ -132,13 +143,9 @@ class HostAuthTests(unittest.IsolatedAsyncioTestCase):
 
                 async def updates():
                     record_token()
-                    yield ChatResponseUpdate(role="assistant", contents=[Content.from_text("Local playground answer")])
+                    yield AgentResponseUpdate(role="assistant", contents=[Content.from_text("Local playground answer")])
 
-                async def response():
-                    record_token()
-                    return ChatResponse(messages=Message("assistant", ["Local playground answer"]))
-
-                return updates() if stream else response()
+                return ResponseStream(updates(), finalizer=AgentResponse.from_updates)
 
         with (
             patch.dict(os.environ, {"OTEL_SDK_DISABLED": "true"}, clear=True),
@@ -183,7 +190,6 @@ class HostAuthTests(unittest.IsolatedAsyncioTestCase):
                     json={"input": "Summarize my emails.", "stream": False, "store": False},
                 )
                 self.assertTrue(response.status_code >= 400 or response.json().get("status") == "failed", response.text)
-            await host._cleanup_agent()
         self.assertEqual(seen_tokens, ["local-token-1", "local-token-2", "local-stream-token", "explicit-user-token"])
         self.assertEqual(auth.get_access_token.call_count, 4)
         self.assertIsNone(workmate._work_iq_token.get())
@@ -269,6 +275,124 @@ class MCPIntegrationTests(unittest.IsolatedAsyncioTestCase):
         await self.call_with_mock_transport(error=True)
 
 
+class HostedMCPTests(unittest.IsolatedAsyncioTestCase):
+    def test_direct_mcp_factory_uses_oauth_connection_and_request_scoped_headers(self):
+        with (
+            patch.dict(os.environ, SETTINGS, clear=True),
+            patch.object(workmate, "get_request_context") as context,
+            patch.object(workmate, "HostedFoundryChatClient") as client,
+            patch.object(workmate, "Agent") as agent,
+            patch.object(workmate, "WorkIQAuth") as local_auth,
+        ):
+            client.return_value.get_mcp_tool.side_effect = FoundryChatClient.get_mcp_tool
+            for call_id in ("caller-a", "caller-b"):
+                context.return_value.platform_headers.return_value = {"x-agent-foundry-call-id": call_id}
+                workmate.create_hosted_agent(MagicMock())
+                self.assertEqual(client.call_args.kwargs["default_headers"], {"x-agent-foundry-call-id": call_id})
+                mcp = agent.call_args.kwargs["tools"][0]
+                self.assertEqual(mcp["type"], "mcp")
+                self.assertEqual(mcp["project_connection_id"], "work-iq-mcp-connection")
+                self.assertEqual(mcp["server_url"], workmate.WORK_IQ_MCP_URL)
+                self.assertEqual(mcp["allowed_tools"], ["ask"])
+                self.assertNotIn("headers", mcp)
+            self.assertEqual(client.call_count, 2)
+            local_auth.assert_not_called()
+
+    def test_hosted_factory_rejects_missing_trusted_caller_context(self):
+        with (
+            patch.object(workmate, "get_request_context") as context,
+            patch.object(workmate, "HostedFoundryChatClient") as client,
+        ):
+            context.return_value.platform_headers.return_value = {}
+            with self.assertRaisesRegex(PermissionError, "trusted Microsoft Foundry caller context"):
+                workmate.create_hosted_agent(MagicMock())
+            client.assert_not_called()
+
+    async def test_real_hosted_client_preserves_caller_header_and_closes_transports(self):
+        with (
+            patch.dict(os.environ, {**SETTINGS, "OTEL_SDK_DISABLED": "true"}, clear=True),
+            patch.object(workmate, "get_request_context") as context,
+        ):
+            context.return_value.platform_headers.return_value = {"x-agent-foundry-call-id": "caller-a"}
+            agent = workmate.create_hosted_agent(MagicMock())
+            workmate.ResponsesHostServer(agent=agent)
+            model = agent.client
+            self.assertEqual(model.client.default_headers["x-agent-foundry-call-id"], "caller-a")
+            with patch.object(model.project_client, "close", new_callable=AsyncMock) as close_project:
+                async with agent:
+                    self.assertFalse(model.client.is_closed())
+                self.assertTrue(model.client.is_closed())
+                close_project.assert_awaited_once()
+            await model.project_client.close()
+
+    async def test_native_host_emits_oauth_consent_and_answers_after_consent(self):
+        consent_link = "https://logic-test.consent.azure-apihub.net/login?data=offline"
+        consented = False
+        created = []
+        closed = []
+
+        class ConsentAgent(Agent):
+            def __init__(self):
+                super().__init__(client=MagicMock(spec=FoundryChatClient, STORES_BY_DEFAULT=True), name="Workmate")
+                created.append(self)
+
+            async def __aexit__(self, *args):
+                await super().__aexit__(*args)
+                closed.append(self)
+
+            def run(self, *, stream, **kwargs):
+                async def updates():
+                    content = (
+                        Content.from_text("Work IQ mailbox answer [1]")
+                        if consented
+                        else Content.from_oauth_consent_request(
+                            consent_link,
+                            additional_properties={"server_label": "work_iq"},
+                        )
+                    )
+                    yield AgentResponseUpdate(role="assistant", contents=[content])
+
+                return ResponseStream(updates(), finalizer=AgentResponse.from_updates)
+
+        with patch.dict(os.environ, {"OTEL_SDK_DISABLED": "true"}, clear=True):
+            host = workmate.ResponsesHostServer(agent=ConsentAgent)
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=host),
+                base_url="http://localhost",
+            ) as client:
+                response = await client.post(
+                    "/responses",
+                    json={"input": "Summarize my emails.", "stream": True, "store": True},
+                )
+                self.assertEqual(response.status_code, 200, response.text)
+                self.assertIn('"type":"oauth_consent_request"', response.text.replace(" ", ""))
+                self.assertIn(consent_link, response.text)
+                self.assertIn("event: response.incomplete", response.text)
+                self.assertNotIn("x-client-workiq-access-token", response.text)
+                events = [
+                    json.loads(line.removeprefix("data: "))
+                    for line in response.text.splitlines()
+                    if line.startswith("data: ")
+                ]
+                previous_response_id = next(
+                    event["response"]["id"] for event in events if event["type"] == "response.incomplete"
+                )
+                consented = True
+                response = await client.post(
+                    "/responses",
+                    json={
+                        "input": "Summarize my emails.",
+                        "stream": True,
+                        "store": True,
+                        "previous_response_id": previous_response_id,
+                    },
+                )
+                self.assertIn("event: response.completed", response.text)
+                self.assertIn("Work IQ mailbox answer [1]", response.text)
+        self.assertEqual(len(created), 2)
+        self.assertEqual(closed, created)
+
+
 class StartupTests(unittest.TestCase):
     def test_local_and_hosted_use_the_same_server(self):
         for hosted in (False, True):
@@ -287,12 +411,22 @@ class StartupTests(unittest.TestCase):
                     patch.object(workmate, "Agent") as agent,
                     patch.object(workmate, "WorkIQResponsesHost") as host,
                     patch.object(workmate, "WorkIQAuth") as auth_factory,
+                    patch.object(workmate, "ResponsesHostServer") as hosted_host,
                 ):
                     workmate.main()
                     selected = hosted_credential if hosted else local_credential
                     other = local_credential if hosted else hosted_credential
                     selected.assert_called_once()
                     other.assert_not_called()
+                    if hosted:
+                        model.assert_not_called()
+                        host.assert_not_called()
+                        hosted_host.assert_called_once()
+                        self.assertTrue(callable(hosted_host.call_args.kwargs["agent"]))
+                        hosted_host.return_value.run.assert_called_once_with(host="0.0.0.0")
+                        auth_factory.assert_not_called()
+                        dotenv.assert_not_called()
+                        continue
                     self.assertEqual(model.call_args.kwargs["credential"], selected.return_value)
                     self.assertEqual(agent.call_args.kwargs["tools"][0].name, "ask_work_iq")
                     local_auth = None if hosted else auth_factory.return_value
@@ -377,12 +511,13 @@ class InvokeTests(unittest.TestCase):
         self.assertNotIn("test-user-token", json.dumps(self.post.call_args.kwargs["json"]))
         self.credential.assert_not_called()
 
-    def test_remote_client_separates_foundry_auth_from_work_iq_and_user_identity(self):
+    def test_remote_client_uses_foundry_auth_without_custom_work_iq_headers(self):
         self.assertEqual(test_client.invoke("Summarize my emails.", remote=True), "Test answer [1]")
         headers = self.post.call_args.kwargs["headers"]
-        self.assertEqual(headers[test_client.WORK_IQ_TOKEN_HEADER], "test-user-token")
         self.assertEqual(headers["Authorization"], "Bearer test-foundry-token")
-        self.assertEqual(headers["x-ms-user-identity"], "test-user-oid")
+        self.assertNotIn(test_client.WORK_IQ_TOKEN_HEADER, headers)
+        self.assertNotIn("x-ms-user-identity", headers)
+        self.app.acquire_token_interactive.assert_not_called()
         self.assertEqual(
             self.post.call_args.args[0],
             f"{SETTINGS['FOUNDRY_PROJECT_ENDPOINT']}/agents/agent-workiq-maf"
@@ -391,11 +526,13 @@ class InvokeTests(unittest.TestCase):
         self.assertEqual(self.post.call_args.kwargs["json"]["store"], False)
         self.assertEqual(self.post.call_args.kwargs["json"]["background"], False)
 
-    def test_remote_requires_authenticated_user_identity(self):
-        self.app.acquire_token_interactive.return_value = {"access_token": "test-user-token"}
-        with self.assertRaisesRegex(RuntimeError, "user object ID"):
+    def test_remote_consent_is_not_printed_as_an_empty_success(self):
+        self.post.return_value.json.return_value = {
+            "status": "incomplete",
+            "output": [{"type": "oauth_consent_request", "consent_link": "https://consent.azure-apihub.net/login"}],
+        }
+        with self.assertRaisesRegex(PermissionError, "Authorize the Work IQ MCP connection"):
             test_client.invoke("Summarize my emails.", remote=True)
-        self.post.assert_not_called()
 
     def test_device_code_sign_in_uses_the_notebook_scope(self):
         os.environ["CODESPACES"] = "true"

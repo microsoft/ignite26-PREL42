@@ -59,6 +59,8 @@ if ($env:ENABLE_WORK_IQ -eq "true") {
     }
     Write-Host "Creating the Work IQ connection and toolbox..."
     uv run --locked python infra/create-toolbox-workiq.py --apply
+    Write-Host "Creating the direct Work IQ MCP OAuth connection..."
+    uv run --locked python infra/create-workiq-mcp.py --apply
 }
 
 Write-Host "Postprovision setup complete."

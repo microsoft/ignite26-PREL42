@@ -285,14 +285,14 @@ Then select **New** and ask:
 
 ===
 
-# Exercise: Foundry hosted agents
+# Exercise: Foundry Hosted Agents
 
-In this exercise, you explore two Microsoft Agent Framework apps that connect to Foundry toolboxes through MCP: one for a Foundry IQ knowledge base, and one for Work IQ Microsoft 365 context. Both are already deployed as Foundry hosted agents. Explore both agents' code, run the Foundry IQ agent locally, and try both hosted versions. Skip the local Work IQ run because of the known consent issue described below.
+In this exercise, you explore two Microsoft Agent Framework apps: one connects to a Foundry IQ knowledge base through a Microsoft Foundry toolbox, and one calls Work IQ MCP directly for your Microsoft 365 context, without Toolbox. Both are deployed as Foundry Hosted Agents. Explore both agents' code, run them locally, and try both hosted versions in the Microsoft Foundry playground.
 
 | Agent | How it reaches its data |
 | --- | --- |
 | **agent-toolbox-foundryiq** | Uses a Foundry toolbox with a Foundry IQ knowledge base, web search, and code interpreter |
-| **agent-toolbox-workiq** | Uses a Foundry toolbox connected to Work IQ for your Microsoft 365 context |
+| **agent-workiq-maf** | Calls Work IQ MCP directly using your delegated credentials, without Toolbox |
 
 ## Agent 1: Foundry IQ through a Foundry toolbox
 
@@ -326,45 +326,46 @@ In this exercise, you explore two Microsoft Agent Framework apps that connect to
 
 4. After the agent responds, select **Traces** beneath its answer. In the **Trajectories** tab, expand the agent run and select the **Execute Tool** entry for knowledge base retrieval. In **Input + Output**, inspect the queries the agent sent and the document content returned.
 
-## Agent 2: Work IQ through a Foundry toolbox
+## Agent 2: Work IQ through direct MCP
 
 ### Explore the code
 
-1. Open **src/agent-toolbox-workiq/main.py** in Visual Studio Code.
-2. Find where the agent connects to the **work-iq-tools** Foundry toolbox and instructs the model to use Work IQ for questions about your Microsoft 365 context.
+1. Open **src/agent-workiq-maf/main.py** in Visual Studio Code.
+2. Find the **ask_work_iq** tool. It calls **https://workiq.svc.cloud.microsoft/mcp** directly through **MCPStreamableHTTPTool** and exposes only the read-only **ask** operation.
+3. Find **create_hosted_agent**. It registers the same MCP endpoint through **FoundryChatClient.get_mcp_tool**, using **work-iq-mcp-connection** for per-user OAuth identity passthrough. It does not use a Foundry toolbox.
+4. Open **src/agent-workiq-maf/workiq_auth.py**. Find the **PublicClientApplication** and the delegated **WorkIQAgent.Ask** scope. Local sign-in uses the same app registration and browser authentication pattern as the Work IQ notebook. In hosted mode, Microsoft Foundry manages authorization through the MCP connection instead.
 
 ### Run locally
 
-> **Known issue:** Work IQ consent fails in the local playground, and a subsequent chat can report that the MCP server failed to initialize. See [issue #18](https://github.com/microsoft/ignite26-PREL42/issues/18).
+1. In the Visual Studio Code terminal, from the lab repository root, start the agent:
 
-1. In the Visual Studio Code terminal, start the agent:
+    +++azd ai agent run agent-workiq-maf+++
 
-    +++azd ai agent run agent-toolbox-workiq+++
-
-2. Wait for a local playground to open in the browser. Then ask:
+2. A Work IQ sign-in window opens before the agent starts listening. Select your lab account, the same account you used for the Work IQ notebook, and complete sign-in and any requested consent. This is separate from your Azure Developer CLI sign-in for model access.
+3. Wait for the terminal to show **Running on http://127.0.0.1:8088**. The local playground opens in the browser. If it opened earlier, wait for the agent to start before sending a message.
+4. In the local playground, ask:
 
     +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
 
-3. If the agent asks you to sign in to the Work IQ connection, select **Open consent**, sign in with your lab credentials, check **I have verified this request and trust the source**, and select **Allow access**. If consent fails or the MCP server cannot initialize, continue with the hosted version after stopping the local agent.
-4. Stop the local agent with **Ctrl+C** in the terminal where you started it.
+5. Review the answer and its sources. Confirm that it refers to messages in your lab mailbox. No second terminal, invocation script, or **Open consent** button in the playground is needed for this local flow.
+6. Stop the local agent with **Ctrl+C** in the terminal where you started it.
+
+> **Local sign-in is single-user:** The local agent keeps its token cache in memory and silently renews tokens for the user who signed in at startup. Do not share or expose the local port. To change users, or if the agent reports that sign-in expired or was revoked, stop and restart the agent and sign in again.
 
 ### Try the hosted version
 
-> **Known issue:** After Work IQ consent, the popup can show **Authentication failed** with **Code ... not found**, while the playground shows **Sign in successful** followed by **MCP server failed to initialize**. Completing consent and starting a **new chat** has been verified to work for the hosted agent. Follow the steps below. See [issue #17](https://github.com/microsoft/ignite26-PREL42/issues/17).
+1. Get the deployed agent's details:
 
-1. Get the agent's deployment details:
+    +++azd ai agent show agent-workiq-maf+++
 
-    +++azd ai agent show agent-toolbox-workiq+++
-
-2. Open the **Playground URL** from the output and sign in with your lab credentials if prompted. Ask:
+2. Open the **Playground URL** from the output and sign in with your lab credentials if prompted.
+3. Ask:
 
     +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
 
-3. If the agent requests Work IQ consent, select **Open consent**, sign in with your lab credentials, check **I have verified this request and trust the source**, and select **Allow access**.
-
-4. After completing consent, close the consent window, even if it shows the **Code ... not found** error described above. In the hosted playground, start a **new chat** and ask the email question again. If the new chat still fails, the workaround has not succeeded; let your instructor know.
-
-5. After the agent answers the email question, select **Traces** beneath its answer. In the **Trajectories** tab, expand the agent run and select the **Execute Tool** entry for the Work IQ call. In **Input + Output**, inspect the request and the returned work context.
+4. If Work IQ requests authorization, select **Open consent**, sign in with the same lab account, review the request, and select **Allow access**. If prompted, check **I have verified this request and trust the source** before allowing access.
+5. Return to the hosted playground. If the authorization turn has stopped, send the email question again. Local browser sign-in and hosted MCP authorization are separate; Microsoft Foundry manages the hosted connection for your signed-in identity.
+6. Review the answer and compare it with the local result. Select **Traces** beneath the answer. In **Trajectories**, expand the run and select the Work IQ MCP tool call. In **Input + Output**, inspect the request and returned work context.
 
 ===
 
@@ -377,7 +378,7 @@ You built context-aware AI with Microsoft IQ:
 - A Work IQ knowledge source over your Microsoft 365 email.
 - Foundry IQ knowledge bases with agentic retrieval over indexed documents, called through the retrieval API and MCP.
 - MCP servers for each IQ in the GitHub Copilot app.
-- Microsoft Agent Framework agents that connect through MCP to Foundry toolboxes for Foundry IQ and Work IQ, with a local Foundry IQ run and both agents explored as Foundry hosted agents.
+- Microsoft Agent Framework agents using a Microsoft Foundry toolbox for Foundry IQ and direct MCP for Work IQ, tested locally and in the Microsoft Foundry hosted playground.
 
 ## Continue learning
 

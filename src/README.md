@@ -9,14 +9,15 @@ Microsoft Agent Framework agents, each deployable as a Foundry Hosted Agent:
 | `agent-toolbox-foundryiq` | Uses a Foundry toolbox with the knowledge base, web search, and code interpreter |
 | `agent-toolbox-foundryiq-workiq` | Uses a Foundry toolbox over a knowledge base with a Work IQ source |
 | `agent-toolbox-workiq` | Uses a Work IQ toolbox for the caller's Microsoft 365 context |
-| `agent-workiq-maf` | Direct Work IQ MCP with local browser sign-in or a forwarded hosted caller token, without Toolbox |
+| `agent-workiq-maf` | Direct Work IQ MCP with local browser sign-in or hosted OAuth identity passthrough, without Toolbox |
 
 ## Try Work IQ without Toolbox
 
-`agent-workiq-maf` runs the **same Responses server locally and in Microsoft Foundry**.
-Local sign-in and the optional test client use the same app registration and delegated `WorkIQAgent.Ask` scope as
-[`workiq-mcp.ipynb`](../notebooks/workiq-mcp.ipynb). The server calls the Work IQ MCP gateway directly
-and exposes only a read-only `ask_work_iq` tool to the model. It does not use Toolbox or RemoteA2A.
+`agent-workiq-maf` exposes the Responses protocol locally and in Microsoft Foundry.
+Both modes use the same Work IQ MCP endpoint and allow only its read-only `ask` tool.
+Local sign-in uses the same app registration and delegated `WorkIQAgent.Ask` scope as
+[`workiq-mcp.ipynb`](../notebooks/workiq-mcp.ipynb). Hosted mode uses a direct MCP project connection
+with **OAuth identity passthrough**. Neither mode uses Toolbox or RemoteA2A.
 
 Complete the [Work IQ admin setup](../docs/workiq-admin-setup.md) and configure the repository-root `.env`
 with `WORK_IQ_SEARCH_ENTRA_APP_ID`, `WORK_IQ_SEARCH_ENTRA_TENANT_ID`, `FOUNDRY_PROJECT_ENDPOINT`, and
@@ -59,45 +60,48 @@ over local sign-in.
 
 ### Then test in Microsoft Foundry
 
+The setup hooks create the direct `work-iq-mcp-connection` OAuth connection. For an existing lab
+that predates this connection, an administrator must run the following once from the repository root
+with the configured lab environment and the permissions described in [admin setup](../docs/workiq-admin-setup.md):
+
+```powershell
+uv run python infra\create-workiq-mcp.py --apply
+```
+
 After a successful local call, stop the local server and deploy to the configured project:
 
 ```powershell
 azd deploy agent-workiq-maf
-uv run --project src\agent-workiq-maf python src\agent-workiq-maf\invoke.py --remote "Summarize my recent emails about the Professional Claw Hammer. Who sent them, and what actions do they request?"
+azd ai agent show agent-workiq-maf
 ```
 
-The remote client authenticates to Microsoft Foundry separately with the `azd` identity and sends
-the delegated Work IQ token in the same `x-client-*` header. It derives `x-ms-user-identity` from
-MSAL's authenticated ID-token claims so that Microsoft Foundry isolates the represented user's state.
-The invoking identity needs **Foundry Agent Consumer** (or an appropriate broader role) and the custom
-`Microsoft.CognitiveServices/accounts/AIServices/agents/endpoints/UserIdentityImpersonation/action`
-data action. The custom action is not included in built-in roles; an administrator must grant it.
-The existing postdeploy hook grants the hosted agent's own model-access roles, not this caller permission.
+Open the **Playground URL**, sign in with your lab account, and ask the same email question.
+If Work IQ requests authorization, select **Open consent**, sign in with that account, review the request,
+and allow access. Return to the playground and send the question again if the consent turn has stopped.
+Inspect **Traces** beneath the answer to see the direct Work IQ MCP call and returned context.
 
-Microsoft Foundry forwards `x-client-*` headers to the container on Responses protocol 2.0.0.
-The server reads the token from `ResponseContext.client_headers`, uses it only for that request,
-and creates a separate direct MCP session for each tool call. The model uses managed identity
-in Microsoft Foundry and `AzureDeveloperCliCredential` locally.
+The hosted agent registers the MCP tool with `FoundryChatClient.get_mcp_tool`, referencing
+`work-iq-mcp-connection`. Microsoft Foundry manages each user's OAuth consent, delegated tokens,
+and renewal. The connection holds the app secret; the agent does not load it or receive a Work IQ token
+in a custom header. Each request gets a fresh agent/client with the platform's trusted caller context.
+The model uses managed identity; Work IQ uses the signed-in user's delegated identity.
+See [MCP OAuth identity passthrough](https://learn.microsoft.com/azure/foundry/agents/how-to/mcp-authentication).
 
-See [Use on-behalf-of flow with hosted agents](https://learn.microsoft.com/azure/foundry/agents/how-to/use-on-behalf-of-flow)
-for the token-forwarding contract and
-[Delegate the end-user identity](https://learn.microsoft.com/azure/foundry/agents/concepts/hosted-agent-permissions#delegate-the-end-user-identity)
-for caller permissions. This lab test client acquires its downstream token interactively, like the
-notebook; it does not need an OBO exchange or a client secret. A production middle tier would
-acquire the delegated Work IQ token through its own supported authentication/OBO flow.
+The caller needs **Foundry Agent Consumer** or an appropriate broader role. The standard playground flow
+does not impersonate another user or require the custom `UserIdentityImpersonation/action` permission.
+The hosting SDK is pinned to a consent-capable release compatible with the local MCP 1.x transport.
 
-**Hosted mode does not use the local sign-in or its token cache.** It never signs in interactively,
-shares a local user's tokens across callers, sends tokens to the model, or falls back to
-application-only Work IQ access. Missing hosted tokens and background execution are rejected.
-Expired forwarded tokens require a new invocation with a fresh token; Microsoft Foundry does not exchange
-or refresh a forwarded token. The standard **hosted** playground cannot test this direct-auth path
-without a caller-supplied Work IQ token header. A working local playground does not establish hosted
-playground compatibility. Toolbox examples remain unchanged for comparison.
-Do not capture `Authorization` or `x-client-workiq-access-token` in proxy or telemetry header logging.
+**Hosted mode does not use the local sign-in or its token cache.** It does not share one user's tokens
+across callers, send tokens to the model, or fall back to application-only Work IQ access.
+Toolbox examples remain unchanged for comparison. Do not capture `Authorization` or local
+`x-client-workiq-access-token` headers in proxy or telemetry header logging.
+
+The optional `invoke.py --remote` client uses ordinary Microsoft Foundry authentication. Complete
+Work IQ authorization in the hosted playground before using it; it does not automate browser consent.
 
 For offline checks, run `uv run python -m unittest -v test_main` from the `agent-workiq-maf` directory.
-These do not establish live Work IQ access or prove that deployment and per-user header forwarding
-work in a particular project. Verify a local answer first, then the deployed answer, and repeat
-with two users to confirm identity separation.
+These check native Responses consent events, request-scoped agent cleanup, and local authentication.
+They do not establish live Work IQ access. Verify a local answer first, then a hosted playground answer,
+and repeat with two users to confirm identity separation.
 
 The notebooks are in [`notebooks/`](../notebooks/).
