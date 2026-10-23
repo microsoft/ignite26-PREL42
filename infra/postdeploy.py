@@ -20,7 +20,6 @@ AGENT_NAMES = (
 )
 FOUNDRY_USER_AGENT_NAMES = (
     "agent-toolbox-foundryiq-workiq",
-    "agent-toolbox-workiq",
     "agent-workiq-maf",
 )
 

@@ -154,7 +154,7 @@ When you open each notebook, select **Select Kernel**, and choose the **ignite26
 
 ## Use Fabric IQ in the GitHub Copilot app
 
-**⚠️ Sign-in window:** The Microsoft Entra sign-in window can open behind the GitHub Copilot app and other windows. If no prompt is visible, minimize the app, browser, and any other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open. See [GitHub issue #14](https://github.com/microsoft/ignite26-PREL42/issues/14).
+**⚠️ Known issue:** Fabric IQ MCP servers currently cannot sign in to the GitHub Copilot app on Windows because of a Microsoft Entra authentication issue. We are tracking the issue in [GitHub issue #14](https://github.com/microsoft/ignite26-PREL42/issues/14).
 
 Add two MCP servers, one for the ontology and one for the data agent. Both sign you in with your Microsoft Entra account, so they don't need headers.
 
@@ -169,13 +169,7 @@ In Visual Studio Code, open the **.env** file in the lab folder and find **FABRI
     - **Server name**: +++fabric-iq-data-agent+++
     - **Server type**: HTTP
     - **URL**: switch to Visual Studio Code, copy the complete **FABRIC_DATA_AGENT_MCP_URL** value from **.env**, and switch back to the app to paste it. Copy only the URL after the first **=**, without surrounding quotes.
-4. Complete the Microsoft Entra sign-in for each server when prompted. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use the **Username** and **Temporary Access Pass** from the lab's **Resources** tab, not your Windows or GitHub credentials.
-
-    At the **Enter Temporary Access Pass** screen shown below, enter your lab's Temporary Access Pass and select **Sign in**.
-
-    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](../img/windows-auth-login.png)
-
-5. Return to the GitHub Copilot app and switch to the **Installed** tab. Under **MCP Servers**, confirm that both servers are toggled on and each has a green check mark. If sign-in still fails, let a proctor know.
+4. Switch to the **Installed** tab. Under **MCP Servers**, confirm that both servers are toggled on and each has a green check mark. When prompted, sign in with your lab credentials.
 
 Then select **New** and ask:
 
@@ -216,25 +210,18 @@ In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** e
 
 ## Use Work IQ in the GitHub Copilot app
 
-**⚠️ Sign-in window:** The Microsoft Entra sign-in window can open behind the GitHub Copilot app and other windows. If no prompt is visible after selecting **Sign in**, minimize the app, browser, and any other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open. See [GitHub issue #16](https://github.com/microsoft/ignite26-PREL42/issues/16).
+**⚠️ Known issue:** The WorkIQ plugin currently cannot authenticate in the GitHub Copilot app on the Skillable Windows machine. We are tracking this issue in [GitHub issue #16](https://github.com/microsoft/ignite26-PREL42/issues/16).
 
 Work IQ is available as a plugin, so you install it instead of adding the MCP server yourself.
 
 1. In the GitHub Copilot app, select **Customize**, and then select **Browse**.
 2. Search for +++workiq+++.
 3. Under **Plugins**, find **WorkIQ** from Microsoft ("Find answers across Microsoft 365 emails, meetings, documents, and Teams messages"), and select **Install**.
-4. Select **New** and ask:
+4. When prompted, sign in with your lab credentials.
 
-    +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
+Then select **New** and ask:
 
-5. If the chat says that the **workiq** extension needs you to sign in, select **Sign in**. Installing the plugin alone may not open a sign-in prompt.
-6. Complete the Microsoft Entra sign-in. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use the **Username** and **Temporary Access Pass** from the lab's **Resources** tab, not your Windows or GitHub credentials.
-
-    At the **Enter Temporary Access Pass** screen shown below, enter your lab's Temporary Access Pass and select **Sign in**.
-
-    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](../img/windows-auth-login.png)
-
-7. Return to the chat. If the original request has not continued, send the prompt again. Confirm that Work IQ returns a summary of the sample emails. If sign-in still fails or the chat reports that the MCP server is not configured, let a proctor know.
++++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
 
 ===
 
@@ -287,18 +274,18 @@ Then select **New** and ask:
 
 # Exercise: Foundry Hosted Agents
 
-In this exercise, you explore two Microsoft Agent Framework apps: one connects to a Foundry IQ knowledge base through a Microsoft Foundry toolbox, and one calls Work IQ MCP directly for your Microsoft 365 context, without Toolbox. Both are deployed as Foundry Hosted Agents. Explore both agents' code, run them locally, and try both hosted versions in the Microsoft Foundry playground.
+In this exercise, you explore two Microsoft Agent Framework apps: one connects to a Foundry IQ knowledge base through a Microsoft Foundry toolbox, and one connects directly to Work IQ through MCP for your Microsoft 365 context. Both are deployed as Foundry Hosted Agents. Explore both agents' code, run them locally, and try both hosted versions in the Microsoft Foundry playground.
 
 | Agent | How it reaches its data |
 | --- | --- |
 | **agent-toolbox-foundryiq** | Uses a Foundry toolbox with a Foundry IQ knowledge base, web search, and code interpreter |
-| **agent-workiq-maf** | Calls Work IQ MCP directly using your delegated credentials, without Toolbox |
+| **agent-workiq-maf** | Connects directly to Work IQ MCP, without Toolbox; uses local browser sign-in or hosted OAuth identity passthrough |
 
 ## Agent 1: Foundry IQ through a Foundry toolbox
 
 ### Explore the code
 
-1. Open **src/agent-toolbox-foundryiq/main.py** in Visual Studio Code.
+1. Open **src\agent-toolbox-foundryiq\main.py** in Visual Studio Code.
 2. Find where the agent connects to the Foundry toolbox's MCP endpoint using **FoundryToolbox**. Inspect the instructions that tell the model to use the knowledge base for company questions, web search for current information, and code interpreter for calculations.
 
 ### Run locally
@@ -319,7 +306,11 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
     +++azd ai agent show agent-toolbox-foundryiq+++
 
-2. Open the **Playground URL** from the output and sign in with your lab credentials if prompted.
+2. Open the **Playground URL** from the output. This opens the agent in the Microsoft Foundry playground. If prompted to sign in, use:
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
+
 3. Ask the same question:
 
     +++What benefits does Contoso offer, and when do I need to enroll?+++
@@ -330,10 +321,10 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
 ### Explore the code
 
-1. Open **src/agent-workiq-maf/main.py** in Visual Studio Code.
-2. Find the **ask_work_iq** tool. It calls **https://workiq.svc.cloud.microsoft/mcp** directly through **MCPStreamableHTTPTool** and exposes only the read-only **ask** operation.
-3. Find **create_hosted_agent**. It registers the same MCP endpoint through **FoundryChatClient.get_mcp_tool**, using **work-iq-mcp-connection** for per-user OAuth identity passthrough. It does not use a Foundry toolbox.
-4. Open **src/agent-workiq-maf/workiq_auth.py**. Find the **PublicClientApplication** and the delegated **WorkIQAgent.Ask** scope. Local sign-in uses the same app registration and browser authentication pattern as the Work IQ notebook. In hosted mode, Microsoft Foundry manages authorization through the MCP connection instead.
+1. Open **src\agent-workiq-maf\main.py** in Visual Studio Code.
+2. Find the **ask_work_iq** tool. For local runs, it connects directly to **https://workiq.svc.cloud.microsoft/mcp** through **MCPStreamableHTTPTool**, allowing only the read-only **ask** operation.
+3. Find **create_hosted_agent**. For hosted runs, it registers the same MCP endpoint through **FoundryChatClient.get_mcp_tool**, using **work-iq-mcp-connection** for per-user OAuth identity passthrough. It does not use a Foundry toolbox.
+4. Open **src\agent-workiq-maf\workiq_auth.py**. Find the **PublicClientApplication** and the delegated **WorkIQAgent.Ask** scope. Local sign-in uses the same app registration and browser authentication pattern as the Work IQ notebook. In hosted mode, Microsoft Foundry manages authorization through the MCP connection instead.
 
 ### Run locally
 
@@ -341,16 +332,24 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
     +++azd ai agent run agent-workiq-maf+++
 
-2. A Work IQ sign-in window opens before the agent starts listening. Select your lab account, the same account you used for the Work IQ notebook, and complete sign-in and any requested consent. This is separate from your Azure Developer CLI sign-in for model access.
+2. A Work IQ sign-in window opens before the agent starts listening. Select the same lab account you used for the Work IQ notebook. If prompted to sign in again, use:
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
+
+    At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**. Complete any requested consent. This sign-in is separate from your Azure Developer CLI sign-in for model access.
+
+    If the sign-in window is hidden, minimize the other windows **inside the lab virtual machine** until you find it. Keep the outer browser hosting the Skillable lab open.
+
 3. Wait for the terminal to show **Running on http://127.0.0.1:8088**. The local playground opens in the browser. If it opened earlier, wait for the agent to start before sending a message.
 4. In the local playground, ask:
 
     +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
 
-5. Review the answer and its sources. Confirm that it refers to messages in your lab mailbox. No second terminal, invocation script, or **Open consent** button in the playground is needed for this local flow.
+5. Review the answer and its sources. Confirm that it refers to messages in your lab mailbox.
 6. Stop the local agent with **Ctrl+C** in the terminal where you started it.
 
-> **Local sign-in is single-user:** The local agent keeps its token cache in memory and silently renews tokens for the user who signed in at startup. Do not share or expose the local port. To change users, or if the agent reports that sign-in expired or was revoked, stop and restart the agent and sign in again.
+> **Local sign-in is single-user:** The local agent keeps its token cache in memory and renews tokens for the user who signed in at startup. Do not share or expose the local port. To change users, or if sign-in expires or is revoked, stop and restart the agent and sign in again.
 
 ### Try the hosted version
 
@@ -358,14 +357,30 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
     +++azd ai agent show agent-workiq-maf+++
 
-2. Open the **Playground URL** from the output and sign in with your lab credentials if prompted.
-3. Ask:
+2. Open the **Playground URL** from the output. This opens the agent in the Microsoft Foundry playground. If prompted to sign in, use:
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
+
+3. In the hosted playground, ask:
 
     +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
 
-4. If Work IQ requests authorization, select **Open consent**, sign in with the same lab account, review the request, and select **Allow access**. If prompted, check **I have verified this request and trust the source** before allowing access.
-5. Return to the hosted playground. If the authorization turn has stopped, send the email question again. Local browser sign-in and hosted MCP authorization are separate; Microsoft Foundry manages the hosted connection for your signed-in identity.
-6. Review the answer and compare it with the local result. Select **Traces** beneath the answer. In **Trajectories**, expand the run and select the Work IQ MCP tool call. In **Input + Output**, inspect the request and returned work context.
+4. If Work IQ requests authorization, select **Open consent** on the most recent active consent request. If the chat shows multiple consent buttons, do not reopen links from earlier attempts.
+
+    Select the same lab account. If prompted to sign in again, use:
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
+
+    At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**. Review the consent request, check **I have verified this request and trust the source** if prompted, and select **Allow access**.
+
+5. Close the consent window and return to the hosted playground. If the agent has not continued, send the email question again. Local browser sign-in and hosted MCP authorization are separate; Microsoft Foundry manages the hosted connection for your signed-in identity.
+
+    If a consent window displays **Authentication failed** with **Code ... not found**, close that window and retry the email question in the playground. Do not assume authorization succeeded or failed from the popup alone: confirm that the agent can return your mailbox results. If the request still fails or repeatedly asks for consent, let a proctor know.
+
+6. Review the answer and compare it with the local result. Once the agent returns your mailbox answer, you do not need to select any remaining consent buttons.
+7. Select **Traces** beneath the answer. In **Trajectories**, expand the run and select the Work IQ MCP tool call. In **Input + Output**, inspect the request and returned work context.
 
 ===
 

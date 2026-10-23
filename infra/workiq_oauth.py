@@ -1,4 +1,4 @@
-"""Shared Work IQ OAuth provisioning for direct MCP and the legacy toolbox example."""
+"""Provision the direct Work IQ MCP connection with per-user OAuth passthrough."""
 
 import argparse
 import asyncio
@@ -9,8 +9,6 @@ import uuid
 from pathlib import Path
 
 import requests
-from azure.ai.projects import AIProjectClient
-from azure.ai.projects.models import WorkIQPreviewToolboxTool
 from dotenv import load_dotenv, set_key
 from kiota_abstractions.api_error import APIError
 from kiota_abstractions.base_request_configuration import RequestConfiguration
@@ -39,7 +37,6 @@ MANAGEMENT_SCOPE = "https://management.azure.com/.default"
 GRAPH_SCOPES = ["https://graph.microsoft.com/.default"]
 WORK_IQ_APP_ID = "fdcc1f02-fc51-4226-8753-f668596af7f7"
 WORK_IQ_SCOPE = "WorkIQAgent.Ask"
-WORK_IQ_TARGET = "https://workiq.svc.cloud.microsoft/a2a/"
 WORK_IQ_MCP_TARGET = "https://workiq.svc.cloud.microsoft/mcp"
 
 
@@ -267,19 +264,17 @@ def create_connection(
     tenant_id: str,
     client_id: str,
     client_secret: str,
-    *,
-    mcp_only: bool = False,
 ) -> dict:
-    """Create a per-user OAuth connection for direct MCP or the legacy A2A tool."""
+    """Create a per-user OAuth connection for direct Work IQ MCP."""
     token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
     payload = {
         "name": connection_name,
         "properties": {
             "authType": "OAuth2",
             "group": "ServicesAndApps",
-            "category": "RemoteTool" if mcp_only else "RemoteA2A",
+            "category": "RemoteTool",
             "expiryTime": None,
-            "target": WORK_IQ_MCP_TARGET if mcp_only else WORK_IQ_TARGET,
+            "target": WORK_IQ_MCP_TARGET,
             "isSharedToAll": True,
             "sharedUserList": [],
             "TokenUrl": token_url,
@@ -303,39 +298,15 @@ def create_connection(
     return response.json()
 
 
-def create_toolbox(endpoint: str, toolbox_name: str, connection_name: str) -> None:
-    """Create and promote a toolbox version containing Work IQ."""
-    credential = get_credential(os.environ["AZURE_TENANT_ID"])
-    project = AIProjectClient(endpoint=endpoint, credential=credential)
-    version = project.toolboxes.create_version(
-        name=toolbox_name,
-        tools=[
-            WorkIQPreviewToolboxTool(
-                name="work_iq",
-                description=(
-                    "Answer questions about the signed-in user's Microsoft 365 mail, "
-                    "chats, meetings, and documents."
-                ),
-                project_connection_id=connection_name,
-            )
-        ],
-        description="Microsoft 365 work context tools for the Work IQ agent.",
-    )
-    project.toolboxes.update(name=toolbox_name, default_version=version.version)
-    print(f"Set toolbox '{toolbox_name}' default version to {version.version}.")
-
-
-async def apply(*, mcp_only: bool = False) -> None:
-    """Apply the Work IQ OAuth configuration; direct MCP does not create a toolbox."""
+async def apply() -> None:
+    """Apply the direct Work IQ MCP OAuth configuration."""
     tenant_id = os.environ["AZURE_TENANT_ID"]
-    endpoint = os.environ["FOUNDRY_PROJECT_ENDPOINT"]
     project_id = os.environ["AZURE_AI_PROJECT_ID"]
-    connection_name = "work-iq-mcp-connection" if mcp_only else "work-iq-connection"
-    toolbox_name = "work-iq-tools"
+    connection_name = "work-iq-mcp-connection"
     url = connection_url(project_id, connection_name)
     headers = get_management_headers(tenant_id)
     existing_connection = get_connection(url, headers)
-    if existing_connection and mcp_only:
+    if existing_connection:
         properties = existing_connection.get("properties", {})
         if (
             properties.get("authType") != "OAuth2"
@@ -363,7 +334,7 @@ async def apply(*, mcp_only: bool = False) -> None:
                 or existing_client_id,
                 scope_id,
             )
-            if mcp_only and existing_client_id and existing_client_id != application.app_id:
+            if existing_client_id and existing_client_id != application.app_id:
                 raise RuntimeError(
                     f"Connection '{connection_name}' uses a different Work IQ app. "
                     "Configure the matching app ID before reusing this connection."
@@ -384,7 +355,6 @@ async def apply(*, mcp_only: bool = False) -> None:
                     tenant_id,
                     application.app_id,
                     client_secret,
-                    mcp_only=mcp_only,
                 )
                 print(f"Created Foundry connection '{connection_name}'.")
 
@@ -404,23 +374,20 @@ async def apply(*, mcp_only: bool = False) -> None:
                 ) from error
             raise
 
-    if not mcp_only:
-        create_toolbox(endpoint, toolbox_name, connection_name)
 
-
-def dry_run(*, mcp_only: bool = False) -> None:
+def dry_run() -> None:
     """Validate required local inputs without changing Entra or Azure resources."""
-    required = ("AZURE_TENANT_ID", "FOUNDRY_PROJECT_ENDPOINT", "AZURE_AI_PROJECT_ID")
+    required = ("AZURE_TENANT_ID", "AZURE_AI_PROJECT_ID")
     missing = [name for name in required if not os.getenv(name)]
     if missing:
         raise RuntimeError(f"Missing required settings: {', '.join(missing)}")
     print("Work IQ setup inputs are valid.")
     print(f"Tenant: {os.environ['AZURE_TENANT_ID']}")
-    print(f"Target: {WORK_IQ_MCP_TARGET if mcp_only else WORK_IQ_TARGET}")
+    print(f"Target: {WORK_IQ_MCP_TARGET}")
     print("No tenant or Azure resources were changed.")
 
 
-def main(*, mcp_only: bool = False) -> None:
+def main() -> None:
     """Parse arguments and run validation or apply the Work IQ configuration."""
     parser = argparse.ArgumentParser()
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -428,10 +395,10 @@ def main(*, mcp_only: bool = False) -> None:
     mode.add_argument("--apply", action="store_true")
     args = parser.parse_args()
     if args.dry_run:
-        dry_run(mcp_only=mcp_only)
+        dry_run()
     else:
         try:
-            asyncio.run(apply(mcp_only=mcp_only))
+            asyncio.run(apply())
         except RuntimeError as error:
             raise SystemExit(f"ERROR: {error}") from None
 

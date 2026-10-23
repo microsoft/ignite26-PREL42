@@ -31,5 +31,5 @@ jobs:
           src/agent-foundryiq-api
           src/agent-toolbox-foundryiq
           src/agent-toolbox-foundryiq-workiq
-          src/agent-toolbox-workiq
+          src/agent-workiq-maf
       - run: az bicep build --file infra/main.bicep --stdout > /dev/null

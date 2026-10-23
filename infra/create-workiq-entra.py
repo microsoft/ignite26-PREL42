@@ -15,7 +15,7 @@ No client secret is created. The signed-in user always authorizes retrieval, so 
 Microsoft 365 permissions. See:
 https://learn.microsoft.com/azure/search/agentic-knowledge-source-how-to-work-iq
 
-The app is also reused by `infra/create-toolbox-workiq.py` for the OAuth2 `RemoteA2A` connection, which
+The app is also reused by `infra/create-workiq-mcp.py` for the direct MCP OAuth2 connection, which
 adds a client secret and the Foundry callback URI to it. The secret goes straight to the Foundry
 connection and is not written to `.env`.
 """

@@ -57,8 +57,6 @@ if [ "${ENABLE_WORK_IQ:-false}" = "true" ]; then
         echo "Creating the Work IQ Entra application..."
         uv run --locked python infra/create-workiq-entra.py --apply
     fi
-    echo "Creating the Work IQ connection and toolbox..."
-    uv run --locked python infra/create-toolbox-workiq.py --apply
     echo "Creating the direct Work IQ MCP OAuth connection..."
     uv run --locked python infra/create-workiq-mcp.py --apply
 fi

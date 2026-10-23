@@ -8,7 +8,6 @@ Microsoft Agent Framework agents, each deployable as a Foundry Hosted Agent:
 | `agent-foundryiq-mcp` | Connects to the knowledge base through its Foundry IQ MCP endpoint |
 | `agent-toolbox-foundryiq` | Uses a Foundry toolbox with the knowledge base, web search, and code interpreter |
 | `agent-toolbox-foundryiq-workiq` | Uses a Foundry toolbox over a knowledge base with a Work IQ source |
-| `agent-toolbox-workiq` | Uses a Work IQ toolbox for the caller's Microsoft 365 context |
 | `agent-workiq-maf` | Direct Work IQ MCP with local browser sign-in or hosted OAuth identity passthrough, without Toolbox |
 
 ## Try Work IQ without Toolbox
@@ -93,7 +92,7 @@ The hosting SDK is pinned to a consent-capable release compatible with the local
 
 **Hosted mode does not use the local sign-in or its token cache.** It does not share one user's tokens
 across callers, send tokens to the model, or fall back to application-only Work IQ access.
-Toolbox examples remain unchanged for comparison. Do not capture `Authorization` or local
+Do not capture `Authorization` or local
 `x-client-workiq-access-token` headers in proxy or telemetry header logging.
 
 The optional `invoke.py --remote` client uses ordinary Microsoft Foundry authentication. Complete

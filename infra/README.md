@@ -26,9 +26,8 @@ The setup scripts run as the signed-in azd user, or as a service principal when 
 | `create-workiq-entra.py` | Creates the Work IQ Entra app and federated credential that Azure AI Search uses |
 | `create-search-indexes.py` | Restores the HR and health indexes and creates the agents' knowledge bases |
 | `create-toolbox-foundryiq.py` | Creates the Foundry IQ toolboxes |
-| `create-toolbox-workiq.py` | Creates the Work IQ OAuth connection and toolbox |
 | `create-workiq-mcp.py` | Creates the direct Work IQ MCP OAuth connection for `agent-workiq-maf`, without a toolbox |
-| `workiq_oauth.py` | Shares app registration, consent, and OAuth connection setup between the two Work IQ helpers |
+| `workiq_oauth.py` | Implements app registration, consent, and OAuth setup for the direct Work IQ MCP connection |
 | `create-lakehouse.py`, `create-fabric-graph.py`, `create-web-analytics-lakehouse.py`, `create-semantic-model.py`, `create-web-analytics-report.py`, `create-fabric-data-agent.py` | Create the Fabric items, in that order |
 | `postdeploy.py` | Grants each deployed agent identity its Search and Foundry roles |
 | `delete-workiq-entra.py` | Deletes the Work IQ Entra app (self-deployment cleanup) |
