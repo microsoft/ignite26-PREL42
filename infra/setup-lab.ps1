@@ -121,6 +121,7 @@ if ($searchReady) {
 }
 if ($workIqReady) {
     $null = Invoke-Step "Work IQ connection and toolbox" { & $python infra\create-toolbox-workiq.py --apply }
+    $null = Invoke-Step "Direct Work IQ MCP OAuth connection" { & $python infra\create-workiq-mcp.py --apply }
 }
 if ($searchReady) { Log "READY: Foundry IQ notebooks" } else { Log "NOT READY: Foundry IQ notebooks" }
 

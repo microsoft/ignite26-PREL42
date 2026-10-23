@@ -12,6 +12,7 @@ import httpx
 from agent_framework import Agent, MCPStreamableHTTPTool, tool
 from agent_framework.foundry import FoundryChatClient
 from agent_framework_foundry_hosting import ResponsesHostServer
+from azure.ai.agentserver.core import get_request_context
 from azure.ai.agentserver.responses import ResponseContext
 from azure.ai.agentserver.responses.models import CreateResponse, ResponseStreamEvent
 from azure.identity import AzureDeveloperCliCredential, ManagedIdentityCredential
@@ -21,6 +22,14 @@ from workiq_auth import WorkIQAuth
 WORK_IQ_MCP_URL = "https://workiq.svc.cloud.microsoft/mcp"
 WORK_IQ_TOKEN_HEADER = "x-client-workiq-access-token"
 _work_iq_token: ContextVar[str | None] = ContextVar("work_iq_token", default=None)
+WORK_IQ_MCP_CONNECTION = "work-iq-mcp-connection"
+INSTRUCTIONS = """You are Workmate, an assistant grounded in the signed-in user's
+Microsoft 365 workplace context. Use the Work IQ tool for every workplace question.
+Respect the permissions and sensitivity boundaries returned by Work IQ.
+Preserve source citations, mention relevant dates and participants, and distinguish
+sourced facts from inference. Say clearly when Work IQ fails or does not provide
+enough information. Never claim access to content the signed-in user cannot access.
+This experiment is read-only; do not perform write actions."""
 
 
 async def ask_work_iq(question: str) -> str:
@@ -62,15 +71,16 @@ class WorkIQResponsesHost(ResponsesHostServer):
         context: ResponseContext,
         cancellation_signal: asyncio.Event,
     ) -> AsyncIterable[ResponseStreamEvent | dict[str, Any]]:
-        if request.background:
+        if request.get("background"):
             raise ValueError("Work IQ requires a foreground request with a current delegated token.")
         token = context.client_headers.get(WORK_IQ_TOKEN_HEADER)
         if not token and self._local_auth is not None:
             token = await asyncio.to_thread(self._local_auth.get_access_token)
         if not token:
             raise PermissionError(f"Supply a delegated Work IQ token in {WORK_IQ_TOKEN_HEADER}.")
-        events = await super()._handle_response(request, context, cancellation_signal)
-        return self._with_work_iq_token(events, token)
+        events = super()._handle_response(request, context, cancellation_signal)
+        async for event in self._with_work_iq_token(events, token):
+            yield event
 
     @staticmethod
     async def _with_work_iq_token(
@@ -83,6 +93,40 @@ class WorkIQResponsesHost(ResponsesHostServer):
                 yield event
         finally:
             _work_iq_token.reset(reset)
+
+
+class HostedFoundryChatClient(FoundryChatClient):
+    """Close both model transports when the request-scoped agent exits."""
+
+    async def __aenter__(self) -> "HostedFoundryChatClient":
+        return self
+
+    async def __aexit__(self, *_args: object) -> None:
+        try:
+            await self.client.close()
+        finally:
+            await self.project_client.close()
+
+
+def create_hosted_agent(credential: ManagedIdentityCredential) -> Agent:
+    """Use direct MCP with per-user OAuth resolved by the Foundry connection."""
+    headers = get_request_context().platform_headers()
+    if not headers:
+        raise PermissionError("Hosted Work IQ requires trusted Microsoft Foundry caller context.")
+    client = HostedFoundryChatClient(
+        project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
+        model=os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"],
+        credential=credential,
+        default_headers=headers,
+    )
+    work_iq = client.get_mcp_tool(
+        name="work_iq",
+        url=WORK_IQ_MCP_URL,
+        project_connection_id=WORK_IQ_MCP_CONNECTION,
+        allowed_tools=["ask"],
+        approval_mode="never_require",
+    )
+    return Agent(client=client, name="Workmate", instructions=INSTRUCTIONS, tools=[work_iq])
 
 
 def main() -> None:
@@ -106,6 +150,9 @@ def main() -> None:
         else AzureDeveloperCliCredential(tenant_id=os.getenv("AZURE_TENANT_ID"), process_timeout=60)
     )
     with credential:
+        if hosted:
+            ResponsesHostServer(agent=lambda: create_hosted_agent(credential)).run(host="0.0.0.0")
+            return
         client = FoundryChatClient(
             project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
             model=os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"],
@@ -114,13 +161,7 @@ def main() -> None:
         agent = Agent(
             client=client,
             name="Workmate",
-            instructions="""You are Workmate, an assistant grounded in the signed-in user's
-            Microsoft 365 workplace context. Use ask_work_iq for every workplace question.
-            Respect the permissions and sensitivity boundaries returned by Work IQ.
-            Preserve source citations, mention relevant dates and participants, and distinguish
-            sourced facts from inference. Say clearly when Work IQ fails or does not provide
-            enough information. Never claim access to content the signed-in user cannot access.
-            This experiment is read-only; do not perform write actions.""",
+            instructions=INSTRUCTIONS,
             tools=[tool(ask_work_iq)],
             default_options={"store": False},
         )
