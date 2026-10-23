@@ -154,7 +154,7 @@ When you open each notebook, select **Select Kernel**, and choose the **ignite26
 
 ## Use Fabric IQ in the GitHub Copilot app
 
-> [!Help] **Sign-in window:** The Microsoft Entra sign-in window can open behind the GitHub Copilot app and other windows. If no prompt is visible, minimize the app, browser, and any other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
+> [!Hint] **Sign-in window:** The Microsoft Entra sign-in window can open behind the GitHub Copilot app and other windows. If no prompt is visible, minimize the app, browser, and any other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
 
 Add two MCP servers, one for the ontology and one for the data agent. Both sign you in with your Microsoft Entra account, so they don't need headers.
 
@@ -207,7 +207,7 @@ In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** e
 1. Open **notebooks/workiq-mcp.ipynb** and run each cell. You sign in, list the tools, ask about the sample emails, discover resource paths and schemas, fetch structured email data, and discover agents.
 2. Open **notebooks/workiq-mcp-actions.ipynb** to explore the write tools, inspect schemas, and preview create, update, delete, and send-mail operations. Writes are disabled by default.
 
-    > [!Help] **Known issue:** Work IQ MCP actions currently do not work in the Skillable lab. The lab advertises only read operations, and calendar write-schema requests are denied. Skip this step for now, including its schema-discovery cell, which can fail even when writes are disabled. We are tracking the issue in [GitHub issue #15](https://github.com/microsoft/ignite26-PREL42/issues/15).
+    > [!Hint] **Known issue:** Work IQ MCP actions currently do not work in the Skillable lab. The lab advertises only read operations, and calendar write-schema requests are denied. Skip this step for now, including its schema-discovery cell, which can fail even when writes are disabled. We are tracking the issue in [GitHub issue #15](https://github.com/microsoft/ignite26-PREL42/issues/15).
 
 3. Open **notebooks/workiq-a2a.ipynb** to discover Work IQ as a remote agent and delegate an email-summary task through A2A.
 
@@ -219,7 +219,7 @@ In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** e
 
 ## Use Work IQ in the GitHub Copilot app
 
-> [!Help] **Sign-in window:** The Microsoft Entra sign-in pop-up can open behind the GitHub Copilot app and other windows. If no prompt is visible after selecting **Sign in**, minimize (do not close) the app, browser, and other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
+> [!Hint] **Sign-in window:** The Microsoft Entra sign-in pop-up can open behind the GitHub Copilot app and other windows. If no prompt is visible after selecting **Sign in**, minimize (do not close) the app, browser, and other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
 
 Work IQ is available as a plugin, so you install it instead of adding the MCP server yourself.
 
@@ -358,7 +358,7 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
     At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**. Complete any requested consent. This sign-in is separate from your Azure Developer CLI sign-in for model access.
 
-    > [!Help] **Sign-in window:** If the sign-in window is hidden, minimize the other windows **inside the lab virtual machine** until you find it. Keep the outer browser hosting the Skillable lab open.
+    > [!Hint] **Sign-in window:** If the sign-in window is hidden, minimize the other windows **inside the lab virtual machine** until you find it. Keep the outer browser hosting the Skillable lab open.
 
 3. Wait for the terminal to show **Running on http://127.0.0.1:8088**. The local playground opens in the browser. If it opened earlier, wait for the agent to start before sending a message.
 4. In the local playground, ask:
@@ -387,7 +387,7 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
 4. If Work IQ requests authorization, select **Open consent** on the most recent active consent request.
 
-    > [!Help] **Multiple consent buttons:** If the chat shows multiple consent buttons, do not reopen links from earlier attempts.
+    > [!Hint] **Multiple consent buttons:** If the chat shows multiple consent buttons, do not reopen links from earlier attempts.
 
     Select the same lab account. If prompted to sign in again, use:
 
@@ -398,7 +398,7 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
 5. Close the consent window and return to the hosted playground. If the agent has not continued, send the email question again. Local browser sign-in and hosted MCP authorization are separate; Microsoft Foundry manages the hosted connection for your signed-in identity.
 
-    > [!Help] **Consent window error:** If a consent window displays **Authentication failed** with **Code ... not found**, close that window and retry the email question in the playground. Do not assume authorization succeeded or failed from the popup alone: confirm that the agent can return your mailbox results. If the request still fails or repeatedly asks for consent, let a proctor know.
+    > [!Hint] **Consent window error:** If a consent window displays **Authentication failed** with **Code ... not found**, close that window and retry the email question in the playground. Do not assume authorization succeeded or failed from the popup alone: confirm that the agent can return your mailbox results. If the request still fails or repeatedly asks for consent, let a proctor know.
 
 6. Review the answer and compare it with the local result. Once the agent returns your mailbox answer, you do not need to select any remaining consent buttons.
 7. Select **Traces** beneath the answer. In **Trajectories**, expand the run and select the Work IQ MCP tool call. In **Input + Output**, inspect the request and returned work context.
