@@ -174,9 +174,7 @@ In Visual Studio Code, open the **.env** file in the lab folder and find **FABRI
     - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
     - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
 
-    At the **Enter Temporary Access Pass** screen shown below, enter the pass above and select **Sign in**.
-
-    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](https://raw.githubusercontent.com/microsoft/ignite26-PREL42/refs/heads/main/img/windows-auth-login.png)
+    At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**.
 
 5. Return to the GitHub Copilot app and switch to the **Installed** tab. Under **MCP Servers**, confirm that both servers are toggled on and each has a green check mark. If sign-in still fails, let a proctor know.
 
@@ -236,9 +234,7 @@ Work IQ is available as a plugin, so you install it instead of adding the MCP se
     - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
     - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
 
-    At the **Enter Temporary Access Pass** screen shown below, enter the pass above and select **Sign in**.
-
-    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](https://raw.githubusercontent.com/microsoft/ignite26-PREL42/refs/heads/main/img/windows-auth-login.png)
+    At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**.
 
 7. Return to the chat. If the original request has not continued, send the prompt again. Confirm that Work IQ returns a summary of the sample emails. If sign-in still fails or the chat reports that the MCP server is not configured, let a proctor know.
 
