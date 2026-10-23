@@ -154,7 +154,7 @@ When you open each notebook, select **Select Kernel**, and choose the **ignite26
 
 ## Use Fabric IQ in the GitHub Copilot app
 
-**⚠️ Known issue:** Fabric IQ MCP servers currently cannot sign in to the GitHub Copilot app on Windows because of a Microsoft Entra authentication issue. We are tracking the issue in [GitHub issue #14](https://github.com/microsoft/ignite26-PREL42/issues/14).
+**⚠️ Sign-in window:** The Microsoft Entra sign-in pop-up can open behind the GitHub Copilot app and other windows. If no prompt is visible, minimize (do not close) the app, browser, and other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
 
 Add two MCP servers, one for the ontology and one for the data agent. Both sign you in with your Microsoft Entra account, so they don't need headers.
 
@@ -169,7 +169,16 @@ In Visual Studio Code, open the **.env** file in the lab folder and find **FABRI
     - **Server name**: +++fabric-iq-data-agent+++
     - **Server type**: HTTP
     - **URL**: switch to Visual Studio Code, copy the complete **FABRIC_DATA_AGENT_MCP_URL** value from **.env**, and switch back to the app to paste it. Copy only the URL after the first **=**, without surrounding quotes.
-4. Switch to the **Installed** tab. Under **MCP Servers**, confirm that both servers are toggled on and each has a green check mark. When prompted, sign in with your lab credentials.
+4. Complete the Microsoft Entra sign-in for each server when prompted. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use:
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
+
+    At the **Enter Temporary Access Pass** screen shown below, enter the pass above and select **Sign in**.
+
+    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](../img/windows-auth-login.png)
+
+5. Return to the GitHub Copilot app and switch to the **Installed** tab. Under **MCP Servers**, confirm that both servers are toggled on and each has a green check mark. If sign-in still fails, let a proctor know.
 
 Then select **New** and ask:
 
@@ -210,18 +219,28 @@ In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** e
 
 ## Use Work IQ in the GitHub Copilot app
 
-**⚠️ Known issue:** The WorkIQ plugin currently cannot authenticate in the GitHub Copilot app on the Skillable Windows machine. We are tracking this issue in [GitHub issue #16](https://github.com/microsoft/ignite26-PREL42/issues/16).
+**⚠️ Sign-in window:** The Microsoft Entra sign-in pop-up can open behind the GitHub Copilot app and other windows. If no prompt is visible after selecting **Sign in**, minimize (do not close) the app, browser, and other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
 
 Work IQ is available as a plugin, so you install it instead of adding the MCP server yourself.
 
 1. In the GitHub Copilot app, select **Customize**, and then select **Browse**.
 2. Search for +++workiq+++.
 3. Under **Plugins**, find **WorkIQ** from Microsoft ("Find answers across Microsoft 365 emails, meetings, documents, and Teams messages"), and select **Install**.
-4. When prompted, sign in with your lab credentials.
+4. Select **New** and ask:
 
-Then select **New** and ask:
+    +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
 
-+++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
+5. If the chat says that the **workiq** extension needs you to sign in, select **Sign in**. Installing the plugin alone may not open a sign-in prompt.
+6. Complete the Microsoft Entra sign-in. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use:
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
+
+    At the **Enter Temporary Access Pass** screen shown below, enter the pass above and select **Sign in**.
+
+    ![Microsoft Entra sign-in window showing the Temporary Access Pass field and Sign in button](../img/windows-auth-login.png)
+
+7. Return to the chat. If the original request has not continued, send the prompt again. Confirm that Work IQ returns a summary of the sample emails. If sign-in still fails or the chat reports that the MCP server is not configured, let a proctor know.
 
 ===
 
