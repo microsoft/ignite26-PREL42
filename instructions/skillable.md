@@ -39,7 +39,7 @@ Your Azure resources, search indexes, Fabric items, hosted agents, and sample em
    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
 
-Keep the browser open. The next sign-ins reuse this session.
+Keep the browser open so later sign-ins can reuse this session. If you are asked to sign in again, use the lab credentials shown at that step, not your Windows or personal account.
 
 ### Sign in to the Azure Developer CLI
 
@@ -49,7 +49,10 @@ The notebooks and agents will use your Azure Developer CLI sign-in.
 
     +++azd auth login+++
 
-2. In the browser window that opens, select your lab account.
+2. In the browser window that opens, select your lab account. If prompted to sign in again, use:
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
 
 ## Sign in to GitHub
 
@@ -84,7 +87,11 @@ Web IQ grounds answers in current web content.
 A Web IQ resource was created for you in your resource group. Get its API key from the Web IQ portal:
 
 1. In the browser, go to +++https://webiq.microsoft.ai/profiles+++.
-2. In the sign-in prompt, select your lab account.
+2. In the sign-in prompt, select your lab account. If prompted to sign in again, use:
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
+
 3. In **Select an Azure Resource**, select your lab subscription for **Azure subscription**, and then select the resource that starts with **webiq-** for **Resource**. Select **Finish**.
 4. Select **Profile Management** in the left menu. Under **Authentication > API Keys**, select the copy icon next to the **default** key.
 
@@ -131,6 +138,10 @@ Fabric IQ gives agents structured business data from Microsoft Fabric. Your Fabr
 Before calling Fabric IQ from code, explore the data and relationships in the Fabric portal. These items are already created for you; you don't need to create or edit them.
 
 1. In the browser, go to +++https://app.fabric.microsoft.com+++ and sign in with your lab credentials.
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
+
 2. Select **Workspaces**, and open the workspace whose name starts with **ContosoDIY-**.
 3. Open **ContosoDIYLakehouse**. Under **Tables**, select a few tables to preview their rows. Look at the products, stores, and inventory data that you will ask about later.
 4. Return to the workspace and open **ContosoDIYOntology**. Explore the **Product**, **Category**, **Store**, **Inventory**, and **Supplier** entities. Inspect their properties and relationships: how does the ontology connect a product to the stores that stock it?
@@ -169,7 +180,10 @@ In Visual Studio Code, open the **.env** file in the lab folder and find **FABRI
     - **Server name**: +++fabric-iq-data-agent+++
     - **Server type**: HTTP
     - **URL**: switch to Visual Studio Code, copy the complete **FABRIC_DATA_AGENT_MCP_URL** value from **.env**, and switch back to the app to paste it. Copy only the URL after the first **=**, without surrounding quotes.
-4. Complete the Microsoft Entra sign-in for each server when prompted. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use the **Username** and **Temporary Access Pass** from the lab's **Resources** tab, not your Windows or GitHub credentials.
+4. Complete the Microsoft Entra sign-in for each server when prompted. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use these lab credentials, not your Windows or GitHub credentials:
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
 
     At the **Enter Temporary Access Pass** screen shown below, enter your lab's Temporary Access Pass and select **Sign in**.
 
@@ -194,12 +208,21 @@ Work IQ gives agents your Microsoft 365 work context: email, meetings, files, ch
 Your mailbox has three emails about an out-of-stock Professional Claw Hammer. Read them before asking Work IQ about them.
 
 1. In the browser, go to +++https://outlook.office.com+++ and sign in with your lab credentials if prompted.
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
+
 2. Open your **Inbox** and find the three sample emails about the **Professional Claw Hammer**.
 3. Open each email and read the inventory updates, customer concerns, and requested actions. You will use Work IQ to summarize this context later in the exercise.
 
 ## Call Work IQ from notebooks
 
 In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
+
+When a notebook opens a Work IQ sign-in window, select your lab account. If prompted to sign in again, use:
+
+- **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+- **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
 
 1. Open **notebooks/workiq-mcp.ipynb** and run each cell. You sign in, list the tools, ask about the sample emails, discover resource paths and schemas, fetch structured email data, and discover agents.
 2. Open **notebooks/workiq-mcp-actions.ipynb** to explore the write tools, inspect schemas, and preview create, update, delete, and send-mail operations. Writes are disabled by default.
@@ -228,7 +251,10 @@ Work IQ is available as a plugin, so you install it instead of adding the MCP se
     +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
 
 5. If the chat says that the **workiq** extension needs you to sign in, select **Sign in**. Installing the plugin alone may not open a sign-in prompt.
-6. Complete the Microsoft Entra sign-in. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use the **Username** and **Temporary Access Pass** from the lab's **Resources** tab, not your Windows or GitHub credentials.
+6. Complete the Microsoft Entra sign-in. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use these lab credentials, not your Windows or GitHub credentials:
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
 
     At the **Enter Temporary Access Pass** screen shown below, enter your lab's Temporary Access Pass and select **Sign in**.
 
@@ -320,6 +346,10 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
     +++azd ai agent show agent-toolbox-foundryiq+++
 
 2. Open the **Playground URL** from the output and sign in with your lab credentials if prompted.
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
+
 3. Ask the same question:
 
     +++What benefits does Contoso offer, and when do I need to enroll?+++
@@ -341,7 +371,13 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
     +++azd ai agent run agent-workiq-maf+++
 
-2. A Work IQ sign-in window opens before the agent starts listening. Select your lab account, the same account you used for the Work IQ notebook, and complete sign-in and any requested consent. This is separate from your Azure Developer CLI sign-in for model access.
+2. A Work IQ sign-in window opens before the agent starts listening. Select your lab account, the same account you used for the Work IQ notebook, and complete sign-in and any requested consent. This is separate from your Azure Developer CLI sign-in for model access. If prompted, use:
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
+
+    At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine; keep the outer browser hosting the lab open.
+
 3. Wait for the terminal to show **Running on http://127.0.0.1:8088**. The local playground opens in the browser. If it opened earlier, wait for the agent to start before sending a message.
 4. In the local playground, ask:
 
@@ -359,11 +395,21 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
     +++azd ai agent show agent-workiq-maf+++
 
 2. Open the **Playground URL** from the output and sign in with your lab credentials if prompted.
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
+
 3. Ask:
 
     +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
 
-4. If Work IQ requests authorization, select **Open consent**, sign in with the same lab account, review the request, and select **Allow access**. If prompted, check **I have verified this request and trust the source** before allowing access.
+4. If Work IQ requests authorization, select **Open consent** and sign in with the same lab account. If prompted to sign in again, use:
+
+    - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
+    - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
+
+    At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**. Review the consent request, check **I have verified this request and trust the source** if prompted, and select **Allow access**.
+
 5. Return to the hosted playground. If the authorization turn has stopped, send the email question again. Local browser sign-in and hosted MCP authorization are separate; Microsoft Foundry manages the hosted connection for your signed-in identity.
 6. Review the answer and compare it with the local result. Select **Traces** beneath the answer. In **Trajectories**, expand the run and select the Work IQ MCP tool call. In **Input + Output**, inspect the request and returned work context.
 
