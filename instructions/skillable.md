@@ -203,9 +203,7 @@ Your mailbox has three emails about an out-of-stock Professional Claw Hammer. Re
 In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
 
 1. Open **notebooks/workiq-mcp.ipynb** and run each cell. You sign in, list the tools, ask about the sample emails, discover resource paths and schemas, fetch structured email data, and discover agents.
-2. Open **notebooks/workiq-mcp-actions.ipynb** to explore the write tools and inspect schemas. When write access is available, running the action cells creates a Seattle restock-review event based on the seeded emails, updates and deletes that event, and sends a follow-up to your own lab mailbox without input prompts.
-
-    > [!Hint] **Known issue:** Work IQ MCP actions have returned access-denied errors in the Skillable lab. Skip this step until write access is validated, including its schema-discovery cell, which can fail before any action runs. We are tracking the issue in [GitHub issue #15](https://github.com/microsoft/ignite26-PREL42/issues/15).
+2. Open **notebooks/workiq-mcp-actions.ipynb** to explore the write tools and inspect schemas. Running the action cells creates a Seattle restock-review event based on the seeded emails, updates and deletes that event, and sends a follow-up to your own lab mailbox without input prompts.
 
 3. Open **notebooks/workiq-a2a.ipynb** to discover Work IQ as a remote agent and delegate an email-summary task through A2A.
 
