@@ -3,7 +3,7 @@ Subject: RE: Weekly inventory report - Seattle flagged
 
 Hi,
 
-Just following up on Marcus's note - I pulled the weekly inventory report and Seattle is showing zero stock on several hand tools, not just the claw hammer. The Professional Claw Hammer (HTHM001600) is the most requested one though.
+Just following up on Marcus's note - I pulled the weekly inventory report and Seattle is showing zero stock on the Professional Claw Hammer (HTHM001600). It's one of our most requested hand tools.
 
 I checked Bellevue and Redmond and they seem to have some units. Could you verify the exact numbers in the system and coordinate a store-to-store transfer if the quantities allow?
 
