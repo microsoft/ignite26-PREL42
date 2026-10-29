@@ -106,7 +106,9 @@ async def create_index_and_upload(
                     continue
                 batch.append(json.loads(line))
                 if len(batch) >= batch_size:
-                    await populate_missing_embeddings(batch, credential, openai_endpoint, embedding_deployment, dimensions)
+                    await populate_missing_embeddings(
+                        batch, credential, openai_endpoint, embedding_deployment, dimensions
+                    )
                     await search_client.upload_documents(documents=batch)
                     uploaded_count += len(batch)
                     batch = []

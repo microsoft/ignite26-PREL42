@@ -81,7 +81,9 @@ class SearchEmbeddingTests(unittest.IsolatedAsyncioTestCase):
             "data": [{"index": 1, "embedding": [0.5, 0.6]}, {"index": 0, "embedding": [0.3, 0.4]}]
         }
         with patch.object(search.requests, "post", return_value=response) as post:
-            await search.populate_missing_embeddings(documents, credential, "https://example.openai.azure.com/", "embed", 2)
+            await search.populate_missing_embeddings(
+                documents, credential, "https://example.openai.azure.com/", "embed", 2
+            )
         self.assertEqual(post.call_args.kwargs["json"], {
             "input": ["Contoso DIY overview", "Contoso DIY careers"], "dimensions": 2,
         })
