@@ -101,6 +101,9 @@ STORE_DETAILS = {
     "Online": ("STORE-ONL", "Online", "WA", "Digital", "Online"),
 }
 
+# Match the seeded Work IQ hammer stockout and store-transfer scenario.
+HAMMER_STOCK_BY_STORE = {"STORE-SEA": 0, "STORE-BEL": 24, "STORE-RED": 18}
+
 SUPPLIER_NAMES = (
     "Cascadia Toolworks",
     "Rainier Building Supply",
@@ -427,7 +430,10 @@ def load_json(filename: str) -> dict:
 def normalize_company_locations(value):
     """Normalize company-prefixed retail locations in nested sample data."""
     if isinstance(value, dict):
-        return {key: normalize_company_locations(item) for key, item in value.items()}
+        return {
+            normalize_company_locations(key): normalize_company_locations(item)
+            for key, item in value.items()
+        }
     if isinstance(value, list):
         return [normalize_company_locations(item) for item in value]
     if isinstance(value, str) and " Retail " in value:
@@ -510,7 +516,8 @@ def generate_inventory(products: list[dict], stores: list[dict]) -> list[dict]:
         )
         for product in products:
             sku = product["sku"]
-            if not is_online and stable_int(
+            scenario_stock = HAMMER_STOCK_BY_STORE.get(store["store_id"]) if sku == "HTHM001600" else None
+            if scenario_stock is None and not is_online and stable_int(
                 store["store_id"], sku, "assortment", modulo=100
             ) >= assortment_percent:
                 continue
@@ -523,6 +530,9 @@ def generate_inventory(products: list[dict], stores: list[dict]) -> list[dict]:
             quantity_reserved = stable_int(
                 store["store_id"], sku, "reserved", modulo=13
             )
+            if scenario_stock is not None:
+                quantity_on_hand = scenario_stock
+                quantity_reserved = 0
             quantity_reserved = min(quantity_reserved, quantity_on_hand)
             reorder_point = 10 + stable_int(
                 store["store_id"], sku, "reorder-point", modulo=21

@@ -37,6 +37,38 @@ LOW_REASONING_KB_NAME = "contoso-company-kb-low"
 MINIMAL_REASONING_KB_NAME = "contoso-company-kb-minimal"
 
 
+async def populate_missing_embeddings(
+    documents: list[dict],
+    credential: Any,
+    openai_endpoint: str,
+    deployment_name: str,
+    dimensions: int,
+) -> None:
+    """Embed revised documents without reusing vectors from their old text."""
+    missing = [document for document in documents if not document.get("snippet_vector")]
+    if not missing:
+        return
+    if not openai_endpoint:
+        raise ValueError("AZURE_OPENAI_ENDPOINT is required to embed revised sample documents.")
+
+    token = await credential.get_token("https://cognitiveservices.azure.com/.default")
+    response = await asyncio.to_thread(
+        requests.post,
+        f"{openai_endpoint.rstrip('/')}/openai/deployments/{deployment_name}/embeddings?api-version=2024-10-21",
+        headers={"Authorization": f"Bearer {token.token}"},
+        json={"input": [document["snippet"] for document in missing], "dimensions": dimensions},
+        timeout=120,
+    )
+    response.raise_for_status()
+    embeddings = {item["index"]: item["embedding"] for item in response.json()["data"]}
+    if set(embeddings) != set(range(len(missing))) or any(
+        len(vector) != dimensions for vector in embeddings.values()
+    ):
+        raise ValueError("Embedding response does not match the sample documents and index dimensions.")
+    for index, document in enumerate(missing):
+        document["snippet_vector"] = embeddings[index]
+
+
 async def create_index_and_upload(
     endpoint: str,
     credential: Any,
@@ -60,6 +92,8 @@ async def create_index_and_upload(
 
         await index_client.create_or_update_index(index)
 
+    embedding_deployment = index_data["vectorSearch"]["vectorizers"][0]["azureOpenAIParameters"]["deploymentId"]
+    dimensions = next(field["dimensions"] for field in index_data["fields"] if field["name"] == "snippet_vector")
     uploaded_count = 0
     batch_size = 100
     batch: list[dict] = []
@@ -72,11 +106,15 @@ async def create_index_and_upload(
                     continue
                 batch.append(json.loads(line))
                 if len(batch) >= batch_size:
+                    await populate_missing_embeddings(
+                        batch, credential, openai_endpoint, embedding_deployment, dimensions
+                    )
                     await search_client.upload_documents(documents=batch)
                     uploaded_count += len(batch)
                     batch = []
 
         if batch:
+            await populate_missing_embeddings(batch, credential, openai_endpoint, embedding_deployment, dimensions)
             await search_client.upload_documents(documents=batch)
             uploaded_count += len(batch)
 
