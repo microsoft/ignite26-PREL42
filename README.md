@@ -35,7 +35,7 @@ Fill in the sections below yourself, then:
 ## 🔥PREL42: Build with Microsoft IQ: A hands-on workshop for context-aware AI
 ### Session description
 
-Add your session description here. Keep it concise — 2-3 sentences about what attendees will learn and why it matters.
+AI applications need more than powerful models. They need the right context to reason, decide, and act effectively. In this workshop, you'll learn how Microsoft IQ brings enterprise and real-world context into AI applications through a combination of expert-led instruction and hands-on Python labs. You'll learn how to retrieve enterprise knowledge with Foundry IQ, access workplace context with Work IQ, work with business data through Fabric IQ, and incorporate real-time web sources with Web IQ.
 
 ### 🚀 Getting started
 
