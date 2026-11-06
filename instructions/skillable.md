@@ -19,7 +19,6 @@ Sign in to the virtual machine with these credentials:
 
 1. Open Visual Studio Code.
 2. Select **File > Open Folder**, go to **Desktop**, select the **ignite26-PREL42** folder, and then select **Select Folder**.
-3. A **Restricted Mode** banner appears at the top of the window. Select **Manage** in that banner, and then select **Trust** to trust the folder.
 
 ### Check the environment setup
 
