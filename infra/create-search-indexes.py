@@ -1,6 +1,5 @@
 """Create Azure AI Search indexes and upload sample data for Foundry IQ demos."""
 
-import argparse
 import asyncio
 import json
 import os
@@ -193,88 +192,11 @@ async def create_knowledge_base(
         print(f"Created knowledge base: {kb_name} with {len(source_refs)} knowledge sources")
 
 
-async def create_legacy_workiq_source(endpoint: str, credential: Any, source_name: str) -> None:
-    """Create a Work IQ source without Entra app auth for callers that only forward a Search user token.
-
-    Foundry Toolbox forwards only x-ms-query-source-authorization, so it cannot supply the
-    x-ms-query-work-iq-source-authorization assertion that EntraAppAuthentication requires. The current SDK
-    and API version require work_iq_parameters, so this source is created with the 2026-05-01-preview REST API.
-    """
-    token = (await credential.get_token("https://search.azure.com/.default")).token
-
-    def put_source() -> None:
-        response = requests.put(
-            f"{endpoint.rstrip('/')}/knowledgesources/{source_name}?api-version=2026-05-01-preview",
-            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-            json={
-                "name": source_name,
-                "kind": "workIQ",
-                "description": "Microsoft 365 workplace context for the signed-in user.",
-            },
-            timeout=120,
-        )
-        response.raise_for_status()
-
-    await asyncio.to_thread(put_source)
-
-
-async def create_workiq_knowledge_base(
-    endpoint: str,
-    credential: Any,
-    kb_name: str,
-    openai_endpoint: str,
-    openai_model_deployment: str,
-    openai_model_name: str,
-) -> None:
-    """Create the Work IQ source and multi-source knowledge base used by the hosted agent."""
-    workiq_source_name = "workiq-toolbox-knowledge-source"
-    await create_legacy_workiq_source(endpoint, credential, workiq_source_name)
-    async with SearchIndexClient(endpoint=endpoint, credential=credential) as index_client:
-        knowledge_base = KnowledgeBase(
-            name=kb_name,
-            description="Multi-source knowledge base combining indexed company documents and Work IQ.",
-            models=[
-                KnowledgeBaseAzureOpenAIModel(
-                    azure_open_ai_parameters=AzureOpenAIVectorizerParameters(
-                        resource_url=openai_endpoint,
-                        deployment_name=openai_model_deployment,
-                        model_name=openai_model_name,
-                    )
-                )
-            ],
-            knowledge_sources=[
-                KnowledgeSourceReference(name="hrdocs"),
-                KnowledgeSourceReference(name="healthdocs"),
-                KnowledgeSourceReference(name=workiq_source_name),
-            ],
-            retrieval_reasoning_effort=KnowledgeRetrievalLowReasoningEffort(),
-            output_mode=KnowledgeRetrievalOutputMode.ANSWER_SYNTHESIS,
-            retrieval_instructions=(
-                "Use Work IQ for workplace context such as emails, chats, events, meetings, and documents. "
-                "Use the search indexes for HR and health policy documents."
-            ),
-        )
-        await index_client.create_or_update_knowledge_base(knowledge_base=knowledge_base)
-        print(f"Created Work IQ knowledge source and knowledge base: {kb_name}")
-
-
-def parse_args() -> argparse.Namespace:
-    """Parse optional knowledge-base provisioning features."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--include-workiq",
-        action="store_true",
-        help="Create the Work IQ knowledge source and multi-source knowledge base.",
-    )
-    return parser.parse_args()
-
-
-async def main_async(include_workiq: bool = False) -> int:
+async def main_async() -> int:
     """Run index creation for all demo indexes."""
     endpoint = os.environ["AZURE_AI_SEARCH_SERVICE_ENDPOINT"]
     openai_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT", "")
     openai_model_deployment = os.environ.get("AZURE_AI_MODEL_DEPLOYMENT_NAME", "")
-    openai_model_name = os.environ.get("AZURE_OPENAI_CHATGPT_MODEL_NAME", openai_model_deployment)
     data_dir = Path("data/index-data")
 
     if not data_dir.exists():
@@ -357,19 +279,6 @@ async def main_async(include_workiq: bool = False) -> int:
         reasoning_effort=KnowledgeRetrievalMinimalReasoningEffort(),
     )
 
-    if include_workiq:
-        await create_workiq_knowledge_base(
-            endpoint=endpoint,
-            credential=credential,
-            kb_name=os.environ.get(
-                "AZURE_AI_SEARCH_WORKIQ_KNOWLEDGE_BASE_NAME",
-                "multisource-workiq-knowledge-base",
-            ),
-            openai_endpoint=openai_endpoint,
-            openai_model_deployment=openai_model_deployment,
-            openai_model_name=openai_model_name,
-        )
-
     print("Search index and knowledge base creation complete.")
 
     await credential.close()
@@ -378,5 +287,4 @@ async def main_async(include_workiq: bool = False) -> int:
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    raise SystemExit(asyncio.run(main_async(include_workiq=args.include_workiq)))
+    raise SystemExit(asyncio.run(main_async()))
