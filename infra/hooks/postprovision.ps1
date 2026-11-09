@@ -6,9 +6,6 @@ uv run --locked python infra/setup-env.py
 Write-Host "Creating the shared Search indexes and the HR agent knowledge base..."
 uv run --locked python infra/create-search-indexes.py
 
-Write-Host "Creating the Foundry toolbox..."
-uv run --locked python infra/create-toolbox-foundryiq.py
-
 if ($env:ENABLE_FABRIC_ITEMS -eq "true") {
     if (-not $env:FABRIC_CAPACITY_ID -and -not $env:FABRIC_WORKSPACE_ID) {
         Write-Error "ENABLE_FABRIC_ITEMS is true but neither FABRIC_CAPACITY_ID nor FABRIC_WORKSPACE_ID is set. Set ENABLE_FABRIC_CAPACITY=true to create a capacity, or set FABRIC_WORKSPACE_ID to use an existing workspace."

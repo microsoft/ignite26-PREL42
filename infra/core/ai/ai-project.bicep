@@ -165,7 +165,7 @@ resource localUserAccountProjectManagerRoleAssignment 'Microsoft.Authorization/r
   }
 }
 
-// The setup service principal creates toolboxes and deploys hosted agents, which are data-plane actions Owner does not grant.
+// The setup service principal deploys hosted agents, which are data-plane actions Owner does not grant.
 resource setupSpRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleId in (empty(setupServicePrincipalId) ? [] : [azureAIUserRoleId, azureAIProjectManagerRoleId]): {
     scope: aiAccount
@@ -207,22 +207,6 @@ module azureAiSearch '../search/azure_ai_search.bicep' = {
     principalType: principalType
     setupServicePrincipalId: setupServicePrincipalId
     location: searchServiceLocation
-  }
-}
-
-module knowledgeBaseMcpConnection 'connection.bicep' = {
-  name: 'knowledge-base-mcp-connection'
-  params: {
-    aiServicesAccountName: aiAccount.name
-    aiProjectName: aiAccount::project.name
-    connectionConfig: {
-      name: 'kb-mcp-connection'
-      category: 'RemoteTool'
-      target: 'https://${azureAiSearch.outputs.searchServiceName}.search.windows.net/knowledgebases/contoso-company-kb-minimal/mcp?api-version=2026-05-01-preview'
-      authType: 'ProjectManagedIdentity'
-      audience: 'https://search.azure.com/'
-      isSharedToAll: true
-    }
   }
 }
 

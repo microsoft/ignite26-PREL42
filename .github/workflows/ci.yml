@@ -28,7 +28,5 @@ jobs:
           uv run python -m compileall -q
           infra
           src/agent-foundryiq-mcp
-          src/agent-foundryiq-api
-          src/agent-toolbox-foundryiq
           src/agent-workiq-maf
       - run: az bicep build --file infra/main.bicep --stdout > /dev/null

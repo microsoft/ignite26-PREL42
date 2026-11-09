@@ -13,11 +13,7 @@ from setup_credential import get_credential
 
 SEARCH_DATA_CONTRIBUTOR_ROLE_ID = "8ebe5a00-799e-43f5-93ac-243d3dce84a7"
 FOUNDRY_USER_ROLE_ID = "53ca6127-db72-4b80-b1b0-d745d6d5456d"
-AGENT_NAMES = (
-    "agent-foundryiq-mcp",
-    "agent-foundryiq-api",
-    "agent-toolbox-foundryiq",
-)
+AGENT_NAMES = ("agent-foundryiq-mcp",)
 FOUNDRY_USER_AGENT_NAMES = ("agent-workiq-maf",)
 
 
