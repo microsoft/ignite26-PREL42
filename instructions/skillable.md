@@ -227,7 +227,7 @@ Work IQ is available as a plugin, so you install it instead of adding the MCP se
 
     +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
 
-5. If the chat says that the **workiq** extension needs you to sign in, select **Sign in**. Installing the plugin alone may not open a sign-in prompt.
+5. If the chat shows **Extension "workiq" needs you to sign in to MCP server "workiq"**, select **Sign in**. Before you sign in, the agent may answer that it can't check your emails; that's expected.
 6. A Microsoft Entra sign-in page opens in the browser. Sign in with:
 
     - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
@@ -235,7 +235,11 @@ Work IQ is available as a plugin, so you install it instead of adding the MCP se
 
     At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**.
 
-7. Return to the GitHub Copilot app. If the original request has not continued, send the prompt again. Confirm that Work IQ returns a summary of the sample emails. If sign-in still fails or the chat reports that the MCP server is not configured, let a proctor know.
+7. Return to the GitHub Copilot app and send the same question again:
+
+    +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
+
+    Confirm that Work IQ returns a summary of the sample emails. If sign-in still fails or the chat reports that the MCP server is not configured, let a proctor know.
 
 ===
 
