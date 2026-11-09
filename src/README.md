@@ -7,7 +7,6 @@ Microsoft Agent Framework agents, each deployable as a Foundry Hosted Agent:
 | `agent-foundryiq-api` | Calls the knowledge base retrieval API from a custom Python tool |
 | `agent-foundryiq-mcp` | Connects to the knowledge base through its Foundry IQ MCP endpoint |
 | `agent-toolbox-foundryiq` | Uses a Foundry toolbox with the knowledge base, web search, and code interpreter |
-| `agent-toolbox-foundryiq-workiq` | Uses a Foundry toolbox over a knowledge base with a Work IQ source |
 | `agent-workiq-maf` | Direct Work IQ MCP with local browser sign-in or hosted OAuth identity passthrough, without Toolbox |
 
 ## Try Work IQ without Toolbox

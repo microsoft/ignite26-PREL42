@@ -5,26 +5,10 @@ echo "Writing local development settings..."
 uv run --locked python infra/setup-env.py
 
 echo "Creating the shared Search indexes and the HR agent knowledge base..."
-if [ "${ENABLE_WORK_IQ_KB_TOOLBOX:-false}" = "true" ]; then
-    echo "Creating the Work IQ Entra application and federated credential for Azure AI Search..."
-    uv run --locked python infra/create-workiq-entra.py --apply
-    uv run --locked python infra/create-search-indexes.py --include-workiq
-else
-    uv run --locked python infra/create-search-indexes.py
-fi
+uv run --locked python infra/create-search-indexes.py
 
 echo "Creating the Foundry toolbox..."
 uv run --locked python infra/create-toolbox-foundryiq.py
-
-if [ "${ENABLE_WORK_IQ_KB_TOOLBOX:-false}" = "true" ]; then
-    echo "Creating the Work IQ knowledge-base toolbox..."
-    uv run --locked python infra/create-toolbox-foundryiq.py \
-        --toolbox-name "${CUSTOM_FOUNDRY_WORKIQ_KB_TOOLBOX_NAME:-workiq-knowledge-tools}" \
-        --knowledge-base-name "${AZURE_AI_SEARCH_WORKIQ_KNOWLEDGE_BASE_NAME:-multisource-workiq-knowledge-base}" \
-        --connection-name "${AZURE_AI_SEARCH_WORKIQ_KB_MCP_CONNECTION_NAME:-workiq-kb-mcp-connection}" \
-        --knowledge-base-description "Retrieve the signed-in user's Microsoft 365 work context through Foundry IQ." \
-        --toolbox-description "Foundry IQ knowledge-base tools backed by a Work IQ knowledge source."
-fi
 
 if [ "${ENABLE_FABRIC_ITEMS:-false}" = "true" ]; then
     if [ -z "${FABRIC_CAPACITY_ID:-}" ] && [ -z "${FABRIC_WORKSPACE_ID:-}" ]; then
@@ -53,10 +37,8 @@ if [ "${ENABLE_FABRIC_ITEMS:-false}" = "true" ]; then
 fi
 
 if [ "${ENABLE_WORK_IQ:-false}" = "true" ]; then
-    if [ "${ENABLE_WORK_IQ_KB_TOOLBOX:-false}" != "true" ]; then
-        echo "Creating the Work IQ Entra application..."
-        uv run --locked python infra/create-workiq-entra.py --apply
-    fi
+    echo "Creating the Work IQ Entra application..."
+    uv run --locked python infra/create-workiq-entra.py --apply
     echo "Creating the direct Work IQ MCP OAuth connection..."
     uv run --locked python infra/create-workiq-mcp.py --apply
 fi

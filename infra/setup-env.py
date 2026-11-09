@@ -42,9 +42,6 @@ def main() -> None:
         ),
         "AZURE_AI_SEARCH_KB_MCP_CONNECTION_NAME": "kb-mcp-connection",
         "CUSTOM_FOUNDRY_AGENT_TOOLBOX_NAME": "hr-agent-tools",
-        "AZURE_AI_SEARCH_WORKIQ_KNOWLEDGE_BASE_NAME": "multisource-workiq-knowledge-base",
-        "AZURE_AI_SEARCH_WORKIQ_KB_MCP_CONNECTION_NAME": "workiq-kb-mcp-connection",
-        "CUSTOM_FOUNDRY_WORKIQ_KB_TOOLBOX_NAME": "workiq-knowledge-tools",
         "APPLICATIONINSIGHTS_CONNECTION_STRING": os.environ.get(
             "APPLICATIONINSIGHTS_CONNECTION_STRING", ""
         ),

@@ -99,25 +99,11 @@ if (-not (Invoke-Step "Write .env" { & $python infra\setup-env.py })) {
     exit 1
 }
 
-# Stage 3: Foundry IQ knowledge bases and toolboxes
+# Stage 3: Foundry IQ knowledge bases and toolbox
 $workIqReady = Invoke-Step "Work IQ Entra app" { & $python infra\create-workiq-entra.py --apply }
-if ($workIqReady) {
-    $searchReady = Invoke-Step "Search indexes and knowledge bases (with Work IQ)" { & $python infra\create-search-indexes.py --include-workiq }
-} else {
-    $searchReady = Invoke-Step "Search indexes and knowledge bases" { & $python infra\create-search-indexes.py }
-}
+$searchReady = Invoke-Step "Search indexes and knowledge bases" { & $python infra\create-search-indexes.py }
 if ($searchReady) {
     $null = Invoke-Step "Foundry IQ toolbox" { & $python infra\create-toolbox-foundryiq.py }
-    if ($workIqReady) {
-        $null = Invoke-Step "Work IQ knowledge-base toolbox" {
-            & $python infra\create-toolbox-foundryiq.py `
-                --toolbox-name workiq-knowledge-tools `
-                --knowledge-base-name multisource-workiq-knowledge-base `
-                --connection-name workiq-kb-mcp-connection `
-                --knowledge-base-description "Retrieve the signed-in user's Microsoft 365 work context through Foundry IQ." `
-                --toolbox-description "Foundry IQ knowledge-base tools backed by a Work IQ knowledge source."
-        }
-    }
 }
 if ($workIqReady) {
     $null = Invoke-Step "Direct Work IQ MCP OAuth connection" { & $python infra\create-workiq-mcp.py --apply }

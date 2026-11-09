@@ -107,16 +107,13 @@ A related option is VS Code Dev Containers, which will open the project in your 
     azd env set ENABLE_FABRIC_CAPACITY true
     azd env set ENABLE_FABRIC_ITEMS true
 
-    # Work IQ knowledge base and toolbox, used by agent-toolbox-foundryiq-workiq
-    azd env set ENABLE_WORK_IQ_KB_TOOLBOX true
-
     # Work IQ Entra app and direct MCP OAuth connection, used by agent-workiq-maf
+    # and the foundryiq-workiq.ipynb notebook
     azd env set ENABLE_WORK_IQ true
     ```
 
     Each flag has prerequisites described in its own section: [Fabric IQ](#enable-fabric-iq),
-    [Work IQ retrieval for Azure AI Search](#enable-work-iq-retrieval-for-azure-ai-search),
-    [the hosted Foundry IQ Work IQ agent](#enable-the-hosted-foundry-iq-work-iq-agent), and
+    [Work IQ retrieval for Azure AI Search](#enable-work-iq-retrieval-for-azure-ai-search), and
     [the direct Work IQ MCP agent](#enable-the-direct-work-iq-mcp-agent).
     You can also set any of these later and re-run `azd provision`.
 
@@ -194,7 +191,7 @@ Provisioning writes the generated identifiers and portal links to `.env`:
 
 ### Enable Work IQ retrieval for Azure AI Search
 
-The `foundryiq-workiq.ipynb` notebook and the Work IQ knowledge base use a Work IQ knowledge source in
+The `foundryiq-workiq.ipynb` notebook uses a Work IQ knowledge source in
 Azure AI Search. Azure AI Search authenticates to Work IQ as a customer-owned Microsoft Entra app through a
 federated credential that trusts the Search service's managed identity. Work IQ usage is billed through
 Copilot credits.
@@ -208,7 +205,7 @@ Prerequisites:
   application permissions `Application.ReadWrite.All`, `DelegatedPermissionGrant.ReadWrite.All`, and
   `Directory.Read.All`.
 
-`infra/create-workiq-entra.py` runs from the postprovision hook when `ENABLE_WORK_IQ_KB_TOOLBOX` is `true`.
+`infra/create-workiq-entra.py` runs from the postprovision hook when `ENABLE_WORK_IQ` is `true`.
 It is used by the `foundryiq-workiq.ipynb` notebook and other callers that can pass the user assertion as
 `query_work_iq_source_authorization` together with a Search-scoped user token as `query_source_authorization`.
 Both are required: without the Search token, Work IQ results are withheld. The script creates or reuses a single-tenant Entra app that exposes `access_as_user`, grants tenant-wide admin consent
@@ -216,36 +213,6 @@ for `WorkIQAgent.Ask`, adds the federated credential for the Search identity (`S
 and writes `WORK_IQ_SEARCH_ENTRA_APP_ID`, `WORK_IQ_SEARCH_ENTRA_TENANT_ID`, and `WORK_IQ_SEARCH_FEDERATED_CREDENTIAL_ID` to `.env`.
 No client secret is created. See
 [Create a Work IQ knowledge source](https://learn.microsoft.com/azure/search/agentic-knowledge-source-how-to-work-iq).
-
-### Enable the hosted Foundry IQ Work IQ agent
-
-Enable the Work IQ knowledge-base and Toolbox creation hook, then rerun provisioning:
-
-```bash
-azd env set ENABLE_WORK_IQ_KB_TOOLBOX true
-azd provision
-azd deploy agent-toolbox-foundryiq-workiq
-azd ai agent invoke agent-toolbox-foundryiq-workiq \
-  --new-session --new-conversation \
-  "Search my recent emails for Professional Claw Hammer and summarize requested actions. Use the knowledge base and its Work IQ source."
-```
-
-Postprovision creates `workiq-toolbox-knowledge-source`, combines it with the shared HR and health index
-sources in `multisource-workiq-knowledge-base`, and publishes `workiq-knowledge-tools`. This source does not
-use the Entra app: Toolbox forwards only the signed-in user's Search-scoped token, and an Entra-app source
-also requires the `x-ms-query-work-iq-source-authorization` assertion, which Toolbox cannot send. The Learn
-page documents the Copilot credits plan and the Entra app for the `2026-08-01-preview` Work IQ knowledge source,
-and this older source is created with the `2026-05-01-preview` API, so callers of this agent need a
-Microsoft 365 Copilot license rather than relying on Copilot credits. The
-notebook `foundryiq-workiq.ipynb` uses the Entra-app source and its own `multisource-workiq-entra-knowledge-base`,
-so it does not change the agent's knowledge base and is not required to deploy the agent.
-
-The dedicated `workiq-kb-mcp-connection` must target the same knowledge-base MCP URL used by the
-Toolbox tool. Do not reuse `kb-mcp-connection`, whose target is `contoso-company-kb-minimal`. Toolbox uses the
-matching Foundry IQ connection to authenticate Search with the project managed identity and emit the
-signed-in user's Search-scoped token as `x-ms-query-source-authorization` for Work IQ retrieval.
-Invoke this agent through its deployed endpoint: local runs do not receive the hosted platform's
-`x-agent-foundry-call-id`, so Toolbox cannot resolve the signed-in caller for Work IQ retrieval.
 
 ### Enable the direct Work IQ MCP agent
 
@@ -341,7 +308,6 @@ The notebooks create their own knowledge bases and are unaffected by these.
 | `agent-foundryiq-api` | Calls the retrieval API on `contoso-company-kb-minimal` from a custom Python tool |
 | `agent-foundryiq-mcp` | Connects to the same knowledge base through its Foundry IQ MCP endpoint |
 | `agent-toolbox-foundryiq` | Uses a Foundry toolbox holding that knowledge base, web search, and code interpreter |
-| `agent-toolbox-foundryiq-workiq` | Uses a Foundry toolbox over the multi-source Work IQ knowledge base |
 | `agent-workiq-maf` | Uses direct Work IQ MCP with local browser sign-in or hosted OAuth identity passthrough, without Toolbox |
 
 Start any of the agents locally, and test them with either the local playground or CLI:
@@ -372,11 +338,6 @@ azd ai agent invoke agent-foundryiq-mcp "What benefits are available, and when d
 
 azd deploy agent-toolbox-foundryiq
 azd ai agent invoke agent-toolbox-foundryiq "What benefits are available, and when do I need to enroll?"
-
-azd deploy agent-toolbox-foundryiq-workiq
-azd ai agent invoke agent-toolbox-foundryiq-workiq \
-  --new-session --new-conversation \
-  "Search my recent emails for Professional Claw Hammer and summarize requested actions. Use the knowledge base and its Work IQ source."
 
 azd deploy agent-workiq-maf
 azd ai agent show agent-workiq-maf
