@@ -85,7 +85,7 @@ A Web IQ resource was created for you in your resource group. Get its API key fr
 1. In the browser, go to +++https://webiq.microsoft.ai/profiles+++.
 2. In the sign-in prompt, select your lab account.
 3. In **Select an Azure Resource**, select your lab subscription for **Azure subscription**, and then select the resource that starts with **webiq-** for **Resource**. Select **Finish**.
-4. Select **Profile Management** in the left menu. Under **Authentication > API Keys**, select the copy icon next to the **default** key.
+4. Select **Profile Management** in the left menu. Under **Authentication > API Keys**, select **Create API key**, enter any name, and select **Create**. Copy the new key.
 
 Then save the key so the notebooks can use it:
 
@@ -168,14 +168,15 @@ In Visual Studio Code, open the **.env** file in the lab folder and find **FABRI
     - **Server name**: +++fabric-iq-data-agent+++
     - **Server type**: HTTP
     - **URL**: switch to Visual Studio Code, copy the complete **FABRIC_DATA_AGENT_MCP_URL** value from **.env**, and switch back to the app to paste it. Copy only the URL after the first **=**, without surrounding quotes.
-4. Complete the Microsoft Entra sign-in for each server when prompted. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use:
+4. Switch to the **Installed** tab. Under **MCP Servers**, find **fabric-iq-ontology** and select **Sign in**. Complete the Microsoft Entra sign-in. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use:
 
     - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
     - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
 
     At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**.
 
-5. Return to the GitHub Copilot app and switch to the **Installed** tab. Under **MCP Servers**, confirm that both servers are toggled on and each has a green check mark. If sign-in still fails, let a proctor know.
+5. Return to the **Installed** tab, find **fabric-iq-data-agent**, select **Sign in**, and complete the sign-in the same way.
+6. Confirm that both servers are toggled on and each has a green check mark. If sign-in still fails, let a proctor know.
 
 Then select **New** and ask:
 
@@ -202,7 +203,12 @@ Your mailbox has three emails about an out-of-stock Professional Claw Hammer. Re
 In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
 
 1. Open **notebooks/workiq-mcp.ipynb** and run each cell. You sign in, list the tools, ask about the sample emails, discover resource paths and schemas, fetch structured email data, and discover agents.
-2. Open **notebooks/workiq-mcp-actions.ipynb** to explore the write tools and inspect schemas. Running the action cells creates a Seattle restock-review event based on the seeded emails, updates and deletes that event, and sends a follow-up to your own lab mailbox without input prompts.
+2. Open **notebooks/workiq-mcp-actions.ipynb** and run the **Step 1** and **Step 2** cells to sign in and inspect the write tools and their schemas. The remaining action cells change real data in your lab mailbox and calendar without input prompts, so run them one at a time and check the result in Outlook after each:
+
+    1. Run the **Step 3** cell to create the restock-review event. In Outlook, open **Calendar** and go to tomorrow. Find **Contoso Seattle: Professional Claw Hammer restock review**, a 30-minute event at 15:00 UTC (Outlook shows it in your local time zone), and open it to see the agenda built from the sample emails.
+    2. Run the **Step 4** cell to update the event. Refresh the calendar and confirm that the subject changed to **Contoso Seattle: HTHM001600 restock and transfer coordination** and that the event is now 45 minutes long.
+    3. Run the **Step 5** cell to delete the event. Refresh the calendar and confirm that the event is gone.
+    4. Run the **Step 6** cell to send the follow-up email. In Outlook, open your **Inbox** and find **Contoso Seattle: HTHM001600 restock follow-up**. It can take a minute to arrive. You can also find it in **Sent Items**.
 
 3. Open **notebooks/workiq-a2a.ipynb** to discover Work IQ as a remote agent and delegate an email-summary task through A2A.
 
