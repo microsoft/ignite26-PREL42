@@ -153,8 +153,6 @@ When you open each notebook, select **Select Kernel**, and choose the **ignite26
 
 ## Use Fabric IQ in the GitHub Copilot app
 
-> [!Help] **Sign-in window:** The Microsoft Entra sign-in window can open behind the GitHub Copilot app and other windows. If no prompt is visible, minimize the app, browser, and any other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
-
 Add two MCP servers, one for the ontology and one for the data agent. Both sign you in with your Microsoft Entra account, so they don't need headers.
 
 In Visual Studio Code, open the **.env** file in the lab folder and find **FABRIC_ONTOLOGY_MCP_URL** and **FABRIC_DATA_AGENT_MCP_URL**. Keep the file open so you can switch back to it when each URL is needed.
@@ -168,14 +166,14 @@ In Visual Studio Code, open the **.env** file in the lab folder and find **FABRI
     - **Server name**: +++fabric-iq-data-agent+++
     - **Server type**: HTTP
     - **URL**: switch to Visual Studio Code, copy the complete **FABRIC_DATA_AGENT_MCP_URL** value from **.env**, and switch back to the app to paste it. Copy only the URL after the first **=**, without surrounding quotes.
-4. Switch to the **Installed** tab. Under **MCP Servers**, find **fabric-iq-ontology** and select **Sign in**. Complete the Microsoft Entra sign-in. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use:
+4. Switch to the **Installed** tab. Under **MCP Servers**, find **fabric-iq-ontology** and select **Sign in**. A Microsoft Entra sign-in page opens in the browser. Sign in with:
 
     - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
     - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
 
-    At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**.
+    At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**. Then return to the GitHub Copilot app.
 
-5. Return to the **Installed** tab, find **fabric-iq-data-agent**, select **Sign in**, and complete the sign-in the same way.
+5. On the **Installed** tab, find **fabric-iq-data-agent**, select **Sign in**, and complete the sign-in in the browser the same way.
 6. Confirm that both servers are toggled on and each has a green check mark. If sign-in still fails, let a proctor know.
 
 Then select **New** and ask:
@@ -220,8 +218,6 @@ In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** e
 
 ## Use Work IQ in the GitHub Copilot app
 
-> [!Help] **Sign-in window:** The Microsoft Entra sign-in pop-up can open behind the GitHub Copilot app and other windows. If no prompt is visible after selecting **Sign in**, minimize (do not close) the app, browser, and other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
-
 Work IQ is available as a plugin, so you install it instead of adding the MCP server yourself.
 
 1. In the GitHub Copilot app, select **Customize**, and then select **Browse**.
@@ -232,14 +228,14 @@ Work IQ is available as a plugin, so you install it instead of adding the MCP se
     +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
 
 5. If the chat says that the **workiq** extension needs you to sign in, select **Sign in**. Installing the plugin alone may not open a sign-in prompt.
-6. Complete the Microsoft Entra sign-in. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use:
+6. A Microsoft Entra sign-in page opens in the browser. Sign in with:
 
     - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
     - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
 
     At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**.
 
-7. Return to the chat. If the original request has not continued, send the prompt again. Confirm that Work IQ returns a summary of the sample emails. If sign-in still fails or the chat reports that the MCP server is not configured, let a proctor know.
+7. Return to the GitHub Copilot app. If the original request has not continued, send the prompt again. Confirm that Work IQ returns a summary of the sample emails. If sign-in still fails or the chat reports that the MCP server is not configured, let a proctor know.
 
 ===
 
