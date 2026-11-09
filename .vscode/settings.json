@@ -1,8 +1,7 @@
 {
     "python.terminal.activateEnvironment": true,
     "python.analysis.extraPaths": [
-        "${workspaceFolder}/src/agent-foundryiq-mcp",
-        "${workspaceFolder}/src/agent-foundryiq-api"
+        "${workspaceFolder}/src/agent-foundryiq-mcp"
     ],
     "python-envs.defaultEnvManager": "ms-python.python:venv",
     "terminal.integrated.env.windows": {

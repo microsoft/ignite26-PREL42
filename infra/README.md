@@ -25,8 +25,7 @@ The setup scripts run as the signed-in azd user, or as a service principal when 
 | `setup-env.py` | Writes the deployment outputs to `.env` |
 | `create-workiq-entra.py` | Creates the Work IQ Entra app and federated credential that Azure AI Search uses |
 | `create-search-indexes.py` | Restores the HR and health indexes and creates the agents' knowledge bases |
-| `create-toolbox-foundryiq.py` | Creates the Foundry IQ toolbox |
-| `create-workiq-mcp.py` | Creates the direct Work IQ MCP OAuth connection for `agent-workiq-maf`, without a toolbox |
+| `create-workiq-mcp.py` | Creates the direct Work IQ MCP OAuth connection for `agent-workiq-maf` |
 | `workiq_oauth.py` | Implements app registration, consent, and OAuth setup for the direct Work IQ MCP connection |
 | `create-lakehouse.py`, `create-fabric-graph.py`, `create-web-analytics-lakehouse.py`, `create-semantic-model.py`, `create-web-analytics-report.py`, `create-fabric-data-agent.py` | Create the Fabric items, in that order |
 | `postdeploy.py` | Grants each deployed agent identity its Search and Foundry roles |
@@ -41,7 +40,7 @@ Configure these as lifecycle actions in the lab profile, in this order.
 | Start | `lifecycle_github_repo_download.ps1` | Downloads this repository to `Desktop\ignite26-PREL42`, with retries. Set `$token` to a read-only GitHub token while the repository is private |
 | Start | `lifecycle_bicep_deployment.ps1` | Signs in as the lab service principal, writes `Desktop\deploy-background.ps1`, and launches it, then exits (Skillable's ~600 second limit) |
 | Background | `Desktop\deploy-background.ps1` | Deploys `main.bicep` to the lab resource group's region with an F16 Fabric capacity, then runs `setup-lab.ps1` |
-| Background | `setup-lab.ps1` | Installs Python dependencies with `uv`, writes `.env`, creates the knowledge bases and toolboxes, seeds the sample emails (`seed-emails.ps1`), creates the azd environment, deploys the hosted agents, and creates the Fabric items |
+| Background | `setup-lab.ps1` | Installs Python dependencies with `uv`, writes `.env`, creates the knowledge bases, seeds the sample emails (`seed-emails.ps1`), creates the azd environment, deploys the hosted agents, and creates the Fabric items |
 | Teardown | `lifecycle_teardown_workiq_entra.ps1` | Deletes the Work IQ Entra app. Run it before the resource group is deleted |
 | Teardown | `lifecycle_teardown_fabric.ps1` | Deletes the Fabric workspaces on the lab capacity, then the capacity |
 | Teardown | `lifecycle_teardown_cogservices.ps1` | Deletes and purges the Foundry account so its name and quota are released |

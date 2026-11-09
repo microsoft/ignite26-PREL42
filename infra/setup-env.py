@@ -40,8 +40,6 @@ def main() -> None:
             f"{os.environ['AZURE_AI_SEARCH_SERVICE_ENDPOINT'].rstrip('/')}"
             "/knowledgebases/contoso-company-kb-minimal/mcp?api-version=2026-05-01-preview"
         ),
-        "AZURE_AI_SEARCH_KB_MCP_CONNECTION_NAME": "kb-mcp-connection",
-        "CUSTOM_FOUNDRY_AGENT_TOOLBOX_NAME": "hr-agent-tools",
         "APPLICATIONINSIGHTS_CONNECTION_STRING": os.environ.get(
             "APPLICATIONINSIGHTS_CONNECTION_STRING", ""
         ),

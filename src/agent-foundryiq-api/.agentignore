@@ -1,5 +1,0 @@
-.env
-.foundry/
-.venv/
-__pycache__/
-*.py[cod]

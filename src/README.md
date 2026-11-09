@@ -4,18 +4,16 @@ Microsoft Agent Framework agents, each deployable as a Foundry Hosted Agent:
 
 | Agent | How it reaches its data |
 | --- | --- |
-| `agent-foundryiq-api` | Calls the knowledge base retrieval API from a custom Python tool |
 | `agent-foundryiq-mcp` | Connects to the knowledge base through its Foundry IQ MCP endpoint |
-| `agent-toolbox-foundryiq` | Uses a Foundry toolbox with the knowledge base, web search, and code interpreter |
-| `agent-workiq-maf` | Direct Work IQ MCP with local browser sign-in or hosted OAuth identity passthrough, without Toolbox |
+| `agent-workiq-maf` | Direct Work IQ MCP with local browser sign-in or hosted OAuth identity passthrough |
 
-## Try Work IQ without Toolbox
+## Try Work IQ through direct MCP
 
 `agent-workiq-maf` exposes the Responses protocol locally and in Microsoft Foundry.
 Both modes use the same Work IQ MCP endpoint and allow only its read-only `ask` tool.
 Local sign-in uses the same app registration and delegated `WorkIQAgent.Ask` scope as
 [`workiq-mcp.ipynb`](../notebooks/workiq-mcp.ipynb). Hosted mode uses a direct MCP project connection
-with **OAuth identity passthrough**. Neither mode uses Toolbox or RemoteA2A.
+with **OAuth identity passthrough**. Neither mode uses RemoteA2A.
 
 Complete the [Work IQ admin setup](../docs/workiq-admin-setup.md) and configure the repository-root `.env`
 with `WORK_IQ_SEARCH_ENTRA_APP_ID`, `WORK_IQ_SEARCH_ENTRA_TENANT_ID`, `FOUNDRY_PROJECT_ENDPOINT`, and

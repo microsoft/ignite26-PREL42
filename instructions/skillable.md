@@ -311,25 +311,26 @@ Then select **New** and ask:
 
 # Exercise: Foundry Hosted Agents
 
-In this exercise, you explore two Microsoft Agent Framework apps: one connects to a Foundry IQ knowledge base through a Microsoft Foundry toolbox, and one connects directly to Work IQ through MCP for your Microsoft 365 context. Both are deployed as Foundry Hosted Agents. Explore both agents' code, run them locally, and try both hosted versions in the Microsoft Foundry playground.
+In this exercise, you explore two Microsoft Agent Framework apps: one connects to a Foundry IQ knowledge base through its MCP endpoint, and one connects directly to Work IQ through MCP for your Microsoft 365 context. Both are deployed as Foundry Hosted Agents. Explore both agents' code, run them locally, and try both hosted versions in the Microsoft Foundry playground.
 
 | Agent | How it reaches its data |
 | --- | --- |
-| **agent-toolbox-foundryiq** | Uses a Foundry toolbox with a Foundry IQ knowledge base, web search, and code interpreter |
-| **agent-workiq-maf** | Connects directly to Work IQ MCP, without Toolbox; uses local browser sign-in or hosted OAuth identity passthrough |
+| **agent-foundryiq-mcp** | Connects to a Foundry IQ knowledge base through its MCP endpoint, plus local tools for enrollment dates |
+| **agent-workiq-maf** | Connects directly to Work IQ MCP; uses local browser sign-in or hosted OAuth identity passthrough |
 
-## Agent 1: Foundry IQ through a Foundry toolbox
+## Agent 1: Foundry IQ through MCP
 
 ### Explore the code
 
-1. Open **src\agent-toolbox-foundryiq\main.py** in Visual Studio Code.
-2. Find where the agent connects to the Foundry toolbox's MCP endpoint using **FoundryToolbox**. Inspect the instructions that tell the model to use the knowledge base for company questions, web search for current information, and code interpreter for calculations.
+1. Open **src\agent-foundryiq-mcp\main.py** in Visual Studio Code.
+2. Find where the agent builds the knowledge base MCP endpoint and connects to it through **MCPStreamableHTTPTool**, allowing only the **knowledge_base_retrieve** tool. The agent authenticates to Azure AI Search with its own identity: your Azure Developer CLI sign-in locally, and its managed identity when hosted.
+3. Find the **get_enrollment_deadline_info** and **get_current_date** tools, and the instructions that tell the model to ground answers in the knowledge base and use these tools for benefits deadlines.
 
 ### Run locally
 
 1. In the Visual Studio Code terminal, start the agent:
 
-    +++azd ai agent run agent-toolbox-foundryiq+++
+    +++azd ai agent run agent-foundryiq-mcp+++
 
 2. Wait for a local playground to open in the browser. Then ask:
 
@@ -341,7 +342,7 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
 1. Get the agent's deployment details:
 
-    +++azd ai agent show agent-toolbox-foundryiq+++
+    +++azd ai agent show agent-foundryiq-mcp+++
 
 2. Open the **Playground URL** from the output. This opens the agent in the Microsoft Foundry playground. If prompted to sign in, use:
 
@@ -352,7 +353,7 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
     +++What benefits does Contoso offer, and when do I need to enroll?+++
 
-4. After the agent responds, select **Traces** beneath its answer. In the **Trajectories** tab, expand the agent run and select the **Execute Tool** entry for knowledge base retrieval. In **Input + Output**, inspect the queries the agent sent and the document content returned.
+4. After the agent responds, select **Traces** beneath its answer. In the **Trajectories** tab, expand the agent run and select the **Execute Tool** entry for **knowledge_base_retrieve**. In **Input + Output**, inspect the queries the agent sent and the document content returned. Then find the tool call for **get_enrollment_deadline_info** and compare its dates with the answer.
 
 ## Agent 2: Work IQ through direct MCP
 
@@ -360,7 +361,7 @@ In this exercise, you explore two Microsoft Agent Framework apps: one connects t
 
 1. Open **src\agent-workiq-maf\main.py** in Visual Studio Code.
 2. Find the **ask_work_iq** tool. For local runs, it connects directly to **https://workiq.svc.cloud.microsoft/mcp** through **MCPStreamableHTTPTool**, allowing only the read-only **ask** operation.
-3. Find **create_hosted_agent**. For hosted runs, it registers the same MCP endpoint through **FoundryChatClient.get_mcp_tool**, using **work-iq-mcp-connection** for per-user OAuth identity passthrough. It does not use a Foundry toolbox.
+3. Find **create_hosted_agent**. For hosted runs, it registers the same MCP endpoint through **FoundryChatClient.get_mcp_tool**, using **work-iq-mcp-connection** for per-user OAuth identity passthrough.
 4. Open **src\agent-workiq-maf\workiq_auth.py**. Find the **PublicClientApplication** and the delegated **WorkIQAgent.Ask** scope. Local sign-in uses the same app registration and browser authentication pattern as the Work IQ notebook. In hosted mode, Microsoft Foundry manages authorization through the MCP connection instead.
 
 ### Run locally
@@ -432,7 +433,7 @@ You built context-aware AI with Microsoft IQ:
 - A Work IQ knowledge source over your Microsoft 365 email.
 - Foundry IQ knowledge bases with agentic retrieval over indexed documents, called through the retrieval API and MCP.
 - MCP servers for each IQ in the GitHub Copilot app.
-- Microsoft Agent Framework agents using a Microsoft Foundry toolbox for Foundry IQ and direct MCP for Work IQ, tested locally and in the Microsoft Foundry hosted playground.
+- Microsoft Agent Framework agents using MCP for Foundry IQ and Work IQ, tested locally and in the Microsoft Foundry hosted playground.
 
 ## Continue learning
 

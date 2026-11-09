@@ -36,7 +36,7 @@ MSAL browser sign-in code without shared authentication helpers.
 `agent-workiq-maf` uses a direct **`RemoteTool`** project connection targeting
 `https://workiq.svc.cloud.microsoft/mcp`, with **OAuth identity passthrough** and the delegated scopes
 `api://workiq.svc.cloud.microsoft/WorkIQAgent.Ask` and `offline_access`.
-It does not use a toolbox or the `work_iq_preview` tool.
+It does not use the `work_iq_preview` tool.
 
 `infra/create-workiq-mcp.py` reuses the notebook app, grants admin consent, creates the
 `work-iq-mcp-connection` OAuth2 connection, and registers the returned Microsoft Foundry callback URI
@@ -54,7 +54,7 @@ Microsoft Foundry playground; Microsoft Foundry manages their delegated tokens a
 The agent forwards trusted platform caller context to the model/tool service, not a client-supplied
 Work IQ token or impersonated identity. Local testing keeps the notebook-style browser sign-in.
 See [MCP authentication](https://learn.microsoft.com/azure/foundry/agents/how-to/mcp-authentication)
-and the [local-to-hosted steps](../src/README.md#try-work-iq-without-toolbox).
+and the [local-to-hosted steps](../src/README.md#try-work-iq-through-direct-mcp).
 
 ## Which Entra app is which
 
@@ -67,7 +67,7 @@ One Work IQ Entra app (created by `infra/create-workiq-entra.py`, `WORK_IQ_SEARC
 | `agent-workiq-maf` | Local: notebook-style browser sign-in. Hosted: per-user OAuth identity passthrough through the direct MCP connection; the app secret stays in Microsoft Foundry, not the agent |
 
 To test direct Work IQ MCP, follow the
-[Agent Framework local-to-hosted steps](../src/README.md#try-work-iq-without-toolbox).
+[Agent Framework local-to-hosted steps](../src/README.md#try-work-iq-through-direct-mcp).
 This reuses the notebook app. The hosted agent's
 managed identity provides model access, not delegated Work IQ access; each user consents separately.
 

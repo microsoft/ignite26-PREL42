@@ -7,9 +7,6 @@ uv run --locked python infra/setup-env.py
 echo "Creating the shared Search indexes and the HR agent knowledge base..."
 uv run --locked python infra/create-search-indexes.py
 
-echo "Creating the Foundry toolbox..."
-uv run --locked python infra/create-toolbox-foundryiq.py
-
 if [ "${ENABLE_FABRIC_ITEMS:-false}" = "true" ]; then
     if [ -z "${FABRIC_CAPACITY_ID:-}" ] && [ -z "${FABRIC_WORKSPACE_ID:-}" ]; then
         echo "ENABLE_FABRIC_ITEMS is true but neither FABRIC_CAPACITY_ID nor FABRIC_WORKSPACE_ID is set." >&2

@@ -152,7 +152,7 @@ opt-in and controlled by two independent flags, one per layer:
   use a workspace you already manage.
 * `ENABLE_FABRIC_ITEMS` (default `false`) runs the postprovision steps that create the Fabric items: the
   lakehouse, ontology, product review graph, web analytics lakehouse, semantic model, Power BI report,
-  Fabric Data Agent, and Fabric IQ toolbox. It requires either `FABRIC_CAPACITY_ID` or
+  Fabric Data Agent. It requires either `FABRIC_CAPACITY_ID` or
   `FABRIC_WORKSPACE_ID` to be set, and fails early with a clear message when neither is present.
 
 To create a capacity and all of the Fabric items:
@@ -305,21 +305,13 @@ The notebooks create their own knowledge bases and are unaffected by these.
 
 | Agent | How it reaches its data |
 | --- | --- |
-| `agent-foundryiq-api` | Calls the retrieval API on `contoso-company-kb-minimal` from a custom Python tool |
-| `agent-foundryiq-mcp` | Connects to the same knowledge base through its Foundry IQ MCP endpoint |
-| `agent-toolbox-foundryiq` | Uses a Foundry toolbox holding that knowledge base, web search, and code interpreter |
-| `agent-workiq-maf` | Uses direct Work IQ MCP with local browser sign-in or hosted OAuth identity passthrough, without Toolbox |
+| `agent-foundryiq-mcp` | Connects to `contoso-company-kb-minimal` through its Foundry IQ MCP endpoint |
+| `agent-workiq-maf` | Uses direct Work IQ MCP with local browser sign-in or hosted OAuth identity passthrough |
 
-Start any of the agents locally, and test them with either the local playground or CLI:
+Start either agent locally, and test it with either the local playground or CLI:
 
 ```bash
-azd ai agent run agent-foundryiq-api
-azd ai agent invoke --local "What benefits are available, and when do I need to enroll?"
-
 azd ai agent run agent-foundryiq-mcp
-azd ai agent invoke --local "What benefits are available, and when do I need to enroll?"
-
-azd ai agent run agent-toolbox-foundryiq
 azd ai agent invoke --local "What benefits are available, and when do I need to enroll?"
 
 azd ai agent run agent-workiq-maf
@@ -330,14 +322,8 @@ azd ai agent invoke --local \
 You can also invoke the deployed versions. You may want to re-deploy before invoking, if you've made any changes:
 
 ```bash
-azd deploy agent-foundryiq-api
-azd ai agent invoke agent-foundryiq-api "What benefits are available, and when do I need to enroll?"
-
 azd deploy agent-foundryiq-mcp
 azd ai agent invoke agent-foundryiq-mcp "What benefits are available, and when do I need to enroll?"
-
-azd deploy agent-toolbox-foundryiq
-azd ai agent invoke agent-toolbox-foundryiq "What benefits are available, and when do I need to enroll?"
 
 azd deploy agent-workiq-maf
 azd ai agent show agent-workiq-maf
@@ -384,5 +370,4 @@ Building and deploying the agents:
 
 * [Microsoft Agent Framework](https://learn.microsoft.com/agent-framework/)
 * [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
-* [Mastering Foundry Toolbox](https://github.com/microsoft-foundry/forgebook/blob/main/notebooks/mastering-foundry-toolbox.ipynb)
 * [Model Context Protocol](https://modelcontextprotocol.io/)
