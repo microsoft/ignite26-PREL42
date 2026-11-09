@@ -247,29 +247,22 @@ Work IQ is available as a plugin, so you install it instead of adding the MCP se
 
 Foundry IQ knowledge bases combine knowledge sources, such as search indexes, Fabric IQ, Work IQ, and Web IQ, and use agentic retrieval to plan queries across them and return grounded answers with citations.
 
-## Explore your Azure AI Search service
+## Inspect the indexed documents before running code
 
-Foundry IQ knowledge bases run on Azure AI Search. Your search service already has HR and health indexes, a knowledge source for each, and two knowledge bases that use them. Explore them in the Azure portal before calling Foundry IQ from code.
+Foundry IQ knowledge bases run on Azure AI Search. Your search service already has two indexes of HR and health documents. Look at what's indexed and compare it with the original files before you build knowledge bases over them.
 
 1. In the Azure portal, search for +++search-+++ in the top search bar, and open the Azure AI Search service in your resource group.
-2. In the left menu, select **Search management > Indexes**. Note the two indexes, **hrdocs** and **healthdocs**, and their document counts.
-3. Open **hrdocs**. On the **Search explorer** tab, enter +++PerksPlus+++ and select **Search**. Review the returned chunks: **snippet** holds the text, **blob_path** points to the source document, and **snippet_vector** holds the embedding used for vector search.
-4. Select the **Fields** tab to see which fields are searchable, filterable, and retrievable, and which field stores vectors.
-5. In the left menu, select **Agentic retrieval > Knowledge sources**. Open **hrdocs** and **healthdocs** to see how each one references its index.
-6. Select **Agentic retrieval > Knowledge bases**. You have two knowledge bases over the same two knowledge sources:
-    - **contoso-company-kb-low** uses low reasoning effort and a chat model to plan queries.
-    - **contoso-company-kb-minimal** uses minimal reasoning effort and no model. The hosted agents and the Foundry IQ MCP endpoint use this one.
-7. Open **contoso-company-kb-low** and, in the chat box, ask:
+2. Select **Search management > Indexes**. Note the two indexes, **hrdocs** and **healthdocs**, and their document counts. Each document is a chunk of a source file.
+3. Open **hrdocs**, and then open **Search explorer**. In the search text box, enter +++vacation+++ and select **Search**. Inspect a result's **snippet**, **blob_path**, and **snippet_parent_id** fields.
+4. In File Explorer, open **Desktop > ignite26-PREL42 > data > ai-search-data > hrdocs**. Open **Contoso_DIY_Company_Overview.md** in Visual Studio Code and find the **Vacation Perks** table.
 
-    +++What benefits does Contoso offer, and when do I need to enroll?+++
-
-    Review the content returned from both knowledge sources, and then select the debug icon to see the activity log: the subqueries the knowledge base planned and which knowledge source answered each one.
+**Compare the records:** Find the chunk in Search explorer whose **blob_path** matches the file, and check that it contains the same vacation tiers. How many weeks does a senior employee get? Keep the file open: the first notebook asks this question, and you can check whether the answer cites this source.
 
 ## Call Foundry IQ from notebooks
 
 In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
 
-1. Open **notebooks/foundryiq-basic.ipynb** and run each cell. You build a multi-source knowledge base over the HR and health indexes and query it with agentic retrieval.
+1. Open **notebooks/foundryiq-basic.ipynb** and run each cell. You upload a file to a file knowledge source, then build a multi-source knowledge base over the HR and health indexes and query it with agentic retrieval. Review the activity log and references for the vacation question.
 2. Open **notebooks/foundryiq-mcp.ipynb** and run each cell. You call a knowledge base through its MCP endpoint.
 3. Open **notebooks/foundryiq-fabriciq-ontology.ipynb** and run each cell. You add the Fabric IQ ontology as a knowledge source.
 4. Open **notebooks/foundryiq-fabriciq-dataagent.ipynb** and run each cell. You add the Fabric data agent as a knowledge source for analytical questions.
@@ -281,6 +274,14 @@ In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** e
 > 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
 > 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
 > 3. Close VS Code completely and restart it.
+
+## Verify what you built in the browser
+
+1. Return to your Azure AI Search service. Select **Agentic retrieval > Knowledge bases** and refresh the list.
+2. Find the knowledge bases the notebooks created: **file-docs-knowledge-base**, **multisource-search-knowledge-base**, **multisource-fabric-ontology-knowledge-base**, **multisource-fabric-data-agent-knowledge-base**, **multisource-workiq-entra-knowledge-base**, and **multisource-web-knowledge-base**. Setup also created **contoso-company-kb-low** and **contoso-company-kb-minimal**; the hosted agents and the Foundry IQ MCP endpoint use **contoso-company-kb-minimal**.
+3. Open **multisource-search-knowledge-base** and inspect its knowledge sources: **hrdocs-knowledge-source** and **healthdocs-knowledge-source**. Then open one of the other **multisource-** knowledge bases and see that it combines the same two sources with a Fabric IQ, Work IQ, or Web IQ source.
+4. Select **Agentic retrieval > Knowledge sources**. Compare **file-docs-knowledge-source**, which the service indexed for you from the uploaded file, with **hrdocs-knowledge-source**, which points to the index you inspected earlier.
+5. Compare one cited vacation claim from the notebook with **Contoso_DIY_Company_Overview.md**. A **blob_path** is citation metadata and might not be a directly accessible link.
 
 ## Use Foundry IQ in the GitHub Copilot app
 
