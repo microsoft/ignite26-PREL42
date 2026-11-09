@@ -35,9 +35,9 @@ If you're learning at your own pace:
 
 By the end of this session, you will be able to:
 
-- Call Web IQ, Fabric IQ, and Work IQ from Python notebooks and add each IQ as an MCP server in the GitHub Copilot app
+- Call Web IQ, Fabric IQ, and Work IQ endpoints from Python and use each IQ's MCP server from the GitHub Copilot app
 - Build Foundry IQ knowledge bases that combine indexed documents, Fabric data, Microsoft 365 email, and web content as knowledge sources for agentic retrieval
-- Build Microsoft Agent Framework agents that use Foundry IQ and Work IQ through MCP, and run them locally and as Foundry hosted agents
+- Build Microsoft Agent Framework agents that use Foundry IQ and Work IQ through MCP, and run them using Foundry hosted agents
 
 ### 💻 Technologies used
 
