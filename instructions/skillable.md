@@ -247,6 +247,24 @@ Work IQ is available as a plugin, so you install it instead of adding the MCP se
 
 Foundry IQ knowledge bases combine knowledge sources, such as search indexes, Fabric IQ, Work IQ, and Web IQ, and use agentic retrieval to plan queries across them and return grounded answers with citations.
 
+## Explore your Azure AI Search service
+
+Foundry IQ knowledge bases run on Azure AI Search. Your search service already has HR and health indexes, a knowledge source for each, and two knowledge bases that use them. Explore them in the Azure portal before calling Foundry IQ from code.
+
+1. In the Azure portal, search for +++search-+++ in the top search bar, and open the Azure AI Search service in your resource group.
+2. In the left menu, select **Search management > Indexes**. Note the two indexes, **hrdocs** and **healthdocs**, and their document counts.
+3. Open **hrdocs**. On the **Search explorer** tab, enter +++PerksPlus+++ and select **Search**. Review the returned chunks: **snippet** holds the text, **blob_path** points to the source document, and **snippet_vector** holds the embedding used for vector search.
+4. Select the **Fields** tab to see which fields are searchable, filterable, and retrievable, and which field stores vectors.
+5. In the left menu, select **Agentic retrieval > Knowledge sources**. Open **hrdocs** and **healthdocs** to see how each one references its index.
+6. Select **Agentic retrieval > Knowledge bases**. You have two knowledge bases over the same two knowledge sources:
+    - **contoso-company-kb-low** uses low reasoning effort and a chat model to plan queries.
+    - **contoso-company-kb-minimal** uses minimal reasoning effort and no model. The hosted agents and the Foundry IQ MCP endpoint use this one.
+7. Open **contoso-company-kb-low** and, in the chat box, ask:
+
+    +++What benefits does Contoso offer, and when do I need to enroll?+++
+
+    Review the content returned from both knowledge sources, and then select the debug icon to see the activity log: the subqueries the knowledge base planned and which knowledge source answered each one.
+
 ## Call Foundry IQ from notebooks
 
 In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
