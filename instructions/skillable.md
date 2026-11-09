@@ -85,7 +85,7 @@ A Web IQ resource was created for you in your resource group. Get its API key fr
 1. In the browser, go to +++https://webiq.microsoft.ai/profiles+++.
 2. In the sign-in prompt, select your lab account.
 3. In **Select an Azure Resource**, select your lab subscription for **Azure subscription**, and then select the resource that starts with **webiq-** for **Resource**. Select **Finish**.
-4. Select **Profile Management** in the left menu. Under **Authentication > API Keys**, select the copy icon next to the **default** key.
+4. Select **Profile Management** in the left menu. Under **Authentication > API Keys**, select **Create API key**, enter any name, and select **Create**. Copy the new key.
 
 Then save the key so the notebooks can use it:
 
@@ -153,8 +153,6 @@ When you open each notebook, select **Select Kernel**, and choose the **ignite26
 
 ## Use Fabric IQ in the GitHub Copilot app
 
-> [!Help] **Sign-in window:** The Microsoft Entra sign-in window can open behind the GitHub Copilot app and other windows. If no prompt is visible, minimize the app, browser, and any other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
-
 Add two MCP servers, one for the ontology and one for the data agent. Both sign you in with your Microsoft Entra account, so they don't need headers.
 
 In Visual Studio Code, open the **.env** file in the lab folder and find **FABRIC_ONTOLOGY_MCP_URL** and **FABRIC_DATA_AGENT_MCP_URL**. Keep the file open so you can switch back to it when each URL is needed.
@@ -168,14 +166,15 @@ In Visual Studio Code, open the **.env** file in the lab folder and find **FABRI
     - **Server name**: +++fabric-iq-data-agent+++
     - **Server type**: HTTP
     - **URL**: switch to Visual Studio Code, copy the complete **FABRIC_DATA_AGENT_MCP_URL** value from **.env**, and switch back to the app to paste it. Copy only the URL after the first **=**, without surrounding quotes.
-4. Complete the Microsoft Entra sign-in for each server when prompted. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use:
+4. Switch to the **Installed** tab. Under **MCP Servers**, find **fabric-iq-ontology** and select **Sign in**. A Microsoft Entra sign-in page opens in the browser. Sign in with:
 
     - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
     - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
 
-    At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**.
+    At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**. Then return to the GitHub Copilot app.
 
-5. Return to the GitHub Copilot app and switch to the **Installed** tab. Under **MCP Servers**, confirm that both servers are toggled on and each has a green check mark. If sign-in still fails, let a proctor know.
+5. On the **Installed** tab, find **fabric-iq-data-agent**, select **Sign in**, and complete the sign-in in the browser the same way.
+6. Confirm that both servers are toggled on and each has a green check mark. If sign-in still fails, let a proctor know.
 
 Then select **New** and ask:
 
@@ -202,7 +201,12 @@ Your mailbox has three emails about an out-of-stock Professional Claw Hammer. Re
 In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
 
 1. Open **notebooks/workiq-mcp.ipynb** and run each cell. You sign in, list the tools, ask about the sample emails, discover resource paths and schemas, fetch structured email data, and discover agents.
-2. Open **notebooks/workiq-mcp-actions.ipynb** to explore the write tools and inspect schemas. Running the action cells creates a Seattle restock-review event based on the seeded emails, updates and deletes that event, and sends a follow-up to your own lab mailbox without input prompts.
+2. Open **notebooks/workiq-mcp-actions.ipynb** and run the **Step 1** and **Step 2** cells to sign in and inspect the write tools and their schemas. The remaining action cells change real data in your lab mailbox and calendar without input prompts, so run them one at a time and check the result in Outlook after each:
+
+    1. Run the **Step 3** cell to create the restock-review event. In Outlook, open **Calendar** and go to tomorrow. Find **Contoso Seattle: Professional Claw Hammer restock review**, a 30-minute event at 15:00 UTC (Outlook shows it in your local time zone), and open it to see the agenda built from the sample emails.
+    2. Run the **Step 4** cell to update the event. Refresh the calendar and confirm that the subject changed to **Contoso Seattle: HTHM001600 restock and transfer coordination** and that the event is now 45 minutes long.
+    3. Run the **Step 5** cell to delete the event. Refresh the calendar and confirm that the event is gone.
+    4. Run the **Step 6** cell to send the follow-up email. In Outlook, open your **Inbox** and find **Contoso Seattle: HTHM001600 restock follow-up**. It can take a minute to arrive. You can also find it in **Sent Items**.
 
 3. Open **notebooks/workiq-a2a.ipynb** to discover Work IQ as a remote agent and delegate an email-summary task through A2A.
 
@@ -214,8 +218,6 @@ In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** e
 
 ## Use Work IQ in the GitHub Copilot app
 
-> [!Help] **Sign-in window:** The Microsoft Entra sign-in pop-up can open behind the GitHub Copilot app and other windows. If no prompt is visible after selecting **Sign in**, minimize (do not close) the app, browser, and other windows **inside the lab virtual machine** until you find the sign-in window. Keep the outer browser hosting the Skillable lab open.
-
 Work IQ is available as a plugin, so you install it instead of adding the MCP server yourself.
 
 1. In the GitHub Copilot app, select **Customize**, and then select **Browse**.
@@ -225,15 +227,19 @@ Work IQ is available as a plugin, so you install it instead of adding the MCP se
 
     +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
 
-5. If the chat says that the **workiq** extension needs you to sign in, select **Sign in**. Installing the plugin alone may not open a sign-in prompt.
-6. Complete the Microsoft Entra sign-in. If the sign-in window is hidden, minimize the other windows inside the lab virtual machine as described above. Use:
+5. If the chat shows **Extension "workiq" needs you to sign in to MCP server "workiq"**, select **Sign in**. Before you sign in, the agent may answer that it can't check your emails; that's expected.
+6. A Microsoft Entra sign-in page opens in the browser. Sign in with:
 
     - **Username**: +++@lab.CloudPortalCredential(User1).Username+++
     - **Temporary Access Pass**: +++@lab.CloudPortalCredential(User1).AccessToken+++
 
     At the **Enter Temporary Access Pass** screen, enter the pass above and select **Sign in**.
 
-7. Return to the chat. If the original request has not continued, send the prompt again. Confirm that Work IQ returns a summary of the sample emails. If sign-in still fails or the chat reports that the MCP server is not configured, let a proctor know.
+7. Return to the GitHub Copilot app and send the same question again:
+
+    +++Check my recent emails for messages about the Professional Claw Hammer. Summarize what colleagues are saying and what actions have been requested.+++
+
+    Confirm that Work IQ returns a summary of the sample emails. If sign-in still fails or the chat reports that the MCP server is not configured, let a proctor know.
 
 ===
 
@@ -241,11 +247,22 @@ Work IQ is available as a plugin, so you install it instead of adding the MCP se
 
 Foundry IQ knowledge bases combine knowledge sources, such as search indexes, Fabric IQ, Work IQ, and Web IQ, and use agentic retrieval to plan queries across them and return grounded answers with citations.
 
+## Inspect the indexed documents before running code
+
+Foundry IQ knowledge bases run on Azure AI Search. Your search service already has two indexes of HR and health documents. Look at what's indexed and compare it with the original files before you build knowledge bases over them.
+
+1. In the Azure portal, search for +++search-+++ in the top search bar, and open the Azure AI Search service in your resource group.
+2. Select **Search management > Indexes**. Note the two indexes, **hrdocs** and **healthdocs**, and their document counts. Each document is a chunk of a source file.
+3. Open **hrdocs**, and then open **Search explorer**. In the search text box, enter +++vacation+++ and select **Search**. Inspect a result's **snippet**, **blob_path**, and **snippet_parent_id** fields.
+4. In File Explorer, open **Desktop > ignite26-PREL42 > data > ai-search-data > hrdocs**. Open **Contoso_DIY_Company_Overview.md** in Visual Studio Code and find the **Vacation Perks** table.
+
+**Compare the records:** Find the chunk in Search explorer whose **blob_path** matches the file, and check that it contains the same vacation tiers. How many weeks does a senior employee get? Keep the file open: the first notebook asks this question, and you can check whether the answer cites this source.
+
 ## Call Foundry IQ from notebooks
 
 In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
 
-1. Open **notebooks/foundryiq-basic.ipynb** and run each cell. You build a multi-source knowledge base over the HR and health indexes and query it with agentic retrieval.
+1. Open **notebooks/foundryiq-basic.ipynb** and run each cell. You upload a file to a file knowledge source, then build a multi-source knowledge base over the HR and health indexes and query it with agentic retrieval. Review the activity log and references for the vacation question.
 2. Open **notebooks/foundryiq-mcp.ipynb** and run each cell. You call a knowledge base through its MCP endpoint.
 3. Open **notebooks/foundryiq-fabriciq-ontology.ipynb** and run each cell. You add the Fabric IQ ontology as a knowledge source.
 4. Open **notebooks/foundryiq-fabriciq-dataagent.ipynb** and run each cell. You add the Fabric data agent as a knowledge source for analytical questions.
@@ -257,6 +274,14 @@ In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** e
 > 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
 > 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
 > 3. Close VS Code completely and restart it.
+
+## Verify what you built in the browser
+
+1. Return to your Azure AI Search service. Select **Agentic retrieval > Knowledge bases** and refresh the list.
+2. Find the knowledge bases the notebooks created: **file-docs-knowledge-base**, **multisource-search-knowledge-base**, **multisource-fabric-ontology-knowledge-base**, **multisource-fabric-data-agent-knowledge-base**, **multisource-workiq-entra-knowledge-base**, and **multisource-web-knowledge-base**. Setup also created **contoso-company-kb-low** and **contoso-company-kb-minimal**; the hosted agents and the Foundry IQ MCP endpoint use **contoso-company-kb-minimal**.
+3. Open **multisource-search-knowledge-base** and inspect its knowledge sources: **hrdocs-knowledge-source** and **healthdocs-knowledge-source**. Then open one of the other **multisource-** knowledge bases and see that it combines the same two sources with a Fabric IQ, Work IQ, or Web IQ source.
+4. Select **Agentic retrieval > Knowledge sources**. Compare **file-docs-knowledge-source**, which the service indexed for you from the uploaded file, with **hrdocs-knowledge-source**, which points to the index you inspected earlier.
+5. Compare one cited vacation claim from the notebook with **Contoso_DIY_Company_Overview.md**. A **blob_path** is citation metadata and might not be a directly accessible link.
 
 ## Use Foundry IQ in the GitHub Copilot app
 
