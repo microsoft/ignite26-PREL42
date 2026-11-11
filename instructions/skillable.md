@@ -24,8 +24,9 @@ Sign in to the virtual machine with these credentials:
 
 Your Azure resources, search indexes, Fabric items, hosted agents, and sample emails are already created for you.
 
-1. In Visual Studio Code, open a terminal with **Terminal > New Terminal**.
-2. Run this command to show the MCP server URLs that setup saved for you:
+1. In Visual Studio Code, select **Terminal > New Terminal**.
+2. Wait a few seconds for the Python virtual environment to be activated in the terminal.
+3. Run this command to show the MCP server URLs that setup saved for you:
 
     +++Get-Content .env | Select-String "MCP_URL"+++
 
