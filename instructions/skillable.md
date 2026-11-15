@@ -259,7 +259,7 @@ Foundry IQ knowledge bases run on Azure AI Search. Your search service already h
 1. In the Azure portal, search for +++search-+++ in the top search bar, and open the Azure AI Search service in your resource group.
 2. Select **Search management > Indexes**. Note the two indexes, **hrdocs** and **healthdocs**, and their document counts. Each document is a chunk of a source file.
 3. Open **hrdocs**, and then open **Search explorer**. In the search text box, enter +++vacation+++ and select **Search**. Inspect a result's **snippet**, **blob_path**, and **snippet_parent_id** fields.
-4. In File Explorer, open **Desktop > ignite26-PREL42 > data > ai-search-data > hrdocs**. Open **Contoso_DIY_Company_Overview.md** in Visual Studio Code and find the **Vacation Perks** table.
+4. Switch to Visual Studio Code. In the **Explorer** pane, expand **data > ai-search-data > hrdocs**, open **Contoso_DIY_Company_Overview.md**, and find the **Vacation Perks** table.
 
 **Compare the records:** Find the chunk in Search explorer whose **blob_path** matches the file, and check that it contains the same vacation tiers. How many weeks does a senior employee get? Keep the file open: the first notebook asks this question, and you can check whether the answer cites this source.
 
