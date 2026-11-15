@@ -104,8 +104,6 @@ In each notebook, select **Select Kernel > Python Environments**, and choose the
 
 > [!Hint] **Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
 >
-> First, confirm that the selected kernel is the lab's **.venv\Scripts\python.exe**. After each recovery step below, reselect the lab kernel if needed and rerun the setup and sign-in cells before continuing:
->
 > 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
 > 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
 > 3. Close VS Code completely and restart it. Reopen the lab folder and notebook. If cells still get stuck, let a proctor know.
@@ -151,8 +149,6 @@ In each notebook, select **Select Kernel > Python Environments**, and choose the
 3. Open **notebooks/fabriciq-dataagent-mcp.ipynb** and run each cell. You call the Fabric data agent's MCP endpoint for analytical questions.
 
 > [!Hint] **Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
->
-> First, confirm that the selected kernel is the lab's **.venv\Scripts\python.exe**. After each recovery step below, reselect the lab kernel if needed and rerun the setup and sign-in cells before continuing:
 >
 > 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
 > 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
@@ -221,8 +217,6 @@ When resuming **workiq-mcp-actions.ipynb** after a kernel restart, run **Step 1*
 
 > [!Hint] **Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
 >
-> First, confirm that the selected kernel is the lab's **.venv\Scripts\python.exe**. After each recovery step below, reselect the lab kernel if needed and rerun the setup and sign-in cells before continuing:
->
 > 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
 > 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
 > 3. Close VS Code completely and restart it. Reopen the lab folder and notebook. If cells still get stuck, let a proctor know.
@@ -281,8 +275,6 @@ In each notebook, select **Select Kernel > Python Environments**, and choose the
 6. Open **notebooks/foundryiq-webiq.ipynb** and run each cell. You add a Web IQ knowledge source, so answers combine the HR documents with web results.
 
 > [!Hint] **Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
->
-> First, confirm that the selected kernel is the lab's **.venv\Scripts\python.exe**. After each recovery step below, reselect the lab kernel if needed and rerun the setup and sign-in cells before continuing:
 >
 > 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
 > 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
