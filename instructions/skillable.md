@@ -68,7 +68,7 @@ In the exercises, you will connect GitHub Copilot app to each IQ so you can quer
 3. When the browser opens, select the lab GitHub account.
 4. Paste the 8-digit code from the app screen.
 5. Select **Authorize GitHub**.
-6. On the next screen, do not select any folder, simply select **Continue**. You will use the app only for chat; you will use VS Code for interacting with the lab folder.
+6. Return to the **GitHub Copilot** app. On the next screen, do not select any folder; select **Continue**. You will use the app only for chat; you will use VS Code for interacting with the lab folder.
 7. Send a message to the agent in the chat box, such as:
 
     +++What are some good restaurants near Moscone Center in San Francisco?+++
@@ -86,7 +86,8 @@ A Web IQ resource was created for you in your resource group. Get its API key fr
 1. In the browser, go to +++https://webiq.microsoft.ai/profiles+++.
 2. In the sign-in prompt, select your lab account.
 3. In **Select an Azure Resource**, select your lab subscription for **Azure subscription**, and then select the resource that starts with **webiq-** for **Resource**. Select **Finish**.
-4. Select **Profile Management** in the left menu. Under **Authentication > API Keys**, select **Create API key**, enter any name, and select **Create**. Copy the new key.
+4. If a dialog invites you to try Web IQ in a playground, select **Skip**.
+5. You are already on the profile management page. Scroll to the bottom of the page. Under **Authentication > API Keys**, select **Create API key**, enter any name, and select **Create**. Copy the new key.
 
 Then save the key so the notebooks can use it:
 
@@ -97,14 +98,16 @@ Then save the key so the notebooks can use it:
 ## Call Web IQ from a notebook
 
 1. Open **notebooks/webiq-mcp.ipynb**.
-2. Select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
+2. If the lab kernel isn't already selected, select **Select Kernel > Python Environments**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe**.
 3. Run each cell. You call the Web IQ MCP endpoint directly to search the web, images, and videos.
 
 > [!Hint] **Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
 >
+> First, confirm that the selected kernel is the lab's **.venv\Scripts\python.exe**. After each recovery step below, reselect the lab kernel if needed and rerun the cells from the top of the notebook:
+>
 > 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
 > 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
-> 3. Close VS Code completely and restart it.
+> 3. Close VS Code completely and restart it. Reopen the lab folder and notebook. If cells still get stuck, let a proctor know.
 
 ## Use Web IQ in the GitHub Copilot app
 
@@ -114,7 +117,7 @@ Then save the key so the notebooks can use it:
     - **Server type**: HTTP
     - **URL**: +++https://api.microsoft.ai/v3/mcp+++
 3. Select **Add header**, and enter the name +++x-apikey+++. Switch to Visual Studio Code, copy the **WEB_IQ_KEY** value from **.env**, and then switch back to the app and paste it as the header value.
-4. Select **Add server**, and then switch to the **Installed** tab. Under **MCP Servers**, confirm that the server is toggled on and has a green check mark.
+4. Switch to the **Installed** tab. Under **MCP Servers**, confirm that **web-iq** is toggled on and has a green check mark.
 
 Then select **New** and ask:
 
@@ -134,13 +137,13 @@ Before calling Fabric IQ from code, explore the data and relationships in the Fa
 2. Select **Workspaces**, and open the workspace whose name starts with **ContosoDIY-**.
 3. Open **ContosoDIYLakehouse**. Under **Tables**, select a few tables to preview their rows. Look at the products, stores, and inventory data that you will ask about later.
 4. Return to the workspace and open **ContosoDIYOntology**. Explore the **Product**, **Category**, **Store**, **Inventory**, and **Supplier** entities. Inspect their properties and relationships: how does the ontology connect a product to the stores that stock it?
-5. Return to the workspace and open **ContosoDIYReviewGraph**. Explore the graph's node and edge types. Look for **Product**, **Reviewer**, **Review**, and **Feature**, and see how the relationships connect reviews to products and features. In the **Components** pane, expand **Edges > MENTIONS** to see the **sentiment**, **confidence**, and **evidenceExcerpt** properties. These properties describe the sentiment of a review's mention of a particular feature, adding feature-level sentiment context to the product catalog.
+5. Return to the workspace and open **ContosoDIYReviewGraph**. Explore the graph's node and edge types. Look for **Product**, **Reviewer**, **Review**, and **Feature**, and see how the relationships connect reviews to products and features. In the **Components** pane, expand **Edges > MENTIONS** to see the **sentiment**, **confidence**, and **evidenceExcerpt** property names. You are inspecting the graph's schema, not previewing property values; you don't need to select the individual properties. These properties describe the sentiment of a review's mention of a particular feature, adding feature-level sentiment context to the product catalog. You will query the graph's data in **notebooks/fabriciq-graph.ipynb**.
 6. Return to the workspace and open the **ContosoWebAnalytics** semantic model. Explore the relationship diagram. In the **Data** pane on the right, expand **Sessions** to see fields such as **Converted** and **RevenueAmount**, and expand **Channels** to see **Channel** and **ChannelGroup**. Follow the relationship line between these tables in the diagram to see how sessions connect to marketing channels. You are inspecting the model's structure, not previewing data rows.
 7. Return to the workspace and open **ContosoDIYDataAgent**. Review its configured data sources: the ontology, review graph, and web analytics semantic model. The data agent brings these sources together so you can ask analytical questions in natural language.
 
 ## Call Fabric IQ from notebooks
 
-When you open each notebook, select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
+When you open each notebook, if the lab kernel isn't already selected, select **Select Kernel > Python Environments**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe**.
 
 1. Open **notebooks/fabriciq-ontology-mcp.ipynb** and run each cell. You call the ontology's MCP endpoint directly.
 2. Open **notebooks/fabriciq-graph.ipynb** and run each cell. You query the product review graph with GQL over the Fabric REST API.
@@ -148,9 +151,11 @@ When you open each notebook, select **Select Kernel**, and choose the **ignite26
 
 > [!Hint] **Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
 >
+> First, confirm that the selected kernel is the lab's **.venv\Scripts\python.exe**. After each recovery step below, reselect the lab kernel if needed and rerun the cells from the top of the notebook:
+>
 > 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
 > 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
-> 3. Close VS Code completely and restart it.
+> 3. Close VS Code completely and restart it. Reopen the lab folder and notebook. If cells still get stuck, let a proctor know.
 
 ## Use Fabric IQ in the GitHub Copilot app
 
@@ -199,7 +204,7 @@ Your mailbox has three emails about an out-of-stock Professional Claw Hammer. Re
 
 ## Call Work IQ from notebooks
 
-In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
+In each notebook, if the lab kernel isn't already selected, select **Select Kernel > Python Environments**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe**.
 
 1. Open **notebooks/workiq-mcp.ipynb** and run each cell. You sign in, list the tools, ask about the sample emails, discover resource paths and schemas, fetch structured email data, and discover agents.
 2. Open **notebooks/workiq-mcp-actions.ipynb** and run the **Step 1** and **Step 2** cells to sign in and inspect the write tools and their schemas. The remaining action cells change real data in your lab mailbox and calendar without input prompts, so run them one at a time and check the result in Outlook after each:
@@ -213,9 +218,11 @@ In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** e
 
 > [!Hint] **Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
 >
+> First, confirm that the selected kernel is the lab's **.venv\Scripts\python.exe**. After each recovery step below, reselect the lab kernel if needed and rerun the setup and sign-in cells. In **workiq-mcp-actions.ipynb**, rerun only **Step 1** and **Step 2**, then check Outlook before retrying an action; don't repeat actions that already completed. If the restart lost state needed by an action, ask a proctor for help:
+>
 > 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
 > 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
-> 3. Close VS Code completely and restart it.
+> 3. Close VS Code completely and restart it. Reopen the lab folder and notebook. If cells still get stuck, let a proctor know.
 
 ## Use Work IQ in the GitHub Copilot app
 
@@ -261,7 +268,7 @@ Foundry IQ knowledge bases run on Azure AI Search. Your search service already h
 
 ## Call Foundry IQ from notebooks
 
-In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe** if it isn't already selected.
+In each notebook, if the lab kernel isn't already selected, select **Select Kernel > Python Environments**, and choose the **ignite26-prel42** environment with the path **.venv\Scripts\python.exe**.
 
 1. Open **notebooks/foundryiq-basic.ipynb** and run each cell. You upload a file to a file knowledge source, then build a multi-source knowledge base over the HR and health indexes and query it with agentic retrieval. Review the activity log and references for the vacation question.
 2. Open **notebooks/foundryiq-mcp.ipynb** and run each cell. You call a knowledge base through its MCP endpoint.
@@ -272,9 +279,11 @@ In each notebook, select **Select Kernel**, and choose the **ignite26-prel42** e
 
 > [!Hint] **Troubleshooting:** If code cells get stuck and keep spinning, try these remediation steps:
 >
+> First, confirm that the selected kernel is the lab's **.venv\Scripts\python.exe**. After each recovery step below, reselect the lab kernel if needed and rerun the cells from the top of the notebook:
+>
 > 1. Select **Restart** from the notebook toolbar at the top. If that doesn't work:
 > 2. Select **Developer: Reload Window** from the VS Code command palette. If that doesn't work:
-> 3. Close VS Code completely and restart it.
+> 3. Close VS Code completely and restart it. Reopen the lab folder and notebook. If cells still get stuck, let a proctor know.
 
 ## Verify what you built in the browser
 
